@@ -1,7 +1,12 @@
+/// <amd-dependency path="esri/core/tsSupport/generatorHelper" name="__generator" />
+/// <amd-dependency path="esri/core/tsSupport/awaiterHelper" name="__awaiter" />
+
 import TileLayer = require("esri/layers/TileLayer");
 import ElevationLayer = require("esri/layers/ElevationLayer");
+import FeatureLayer = require("esri/layers/FeatureLayer");
 import Map = require("esri/Map");
 import SceneView = require("esri/views/SceneView");
+import { Polyline, SpatialReference } from "esri/geometry";
 
 import { BlendLayer } from "./BlendLayer";
 import { ExaggerationElevationLayer } from "./ExaggerationElevationLayer";
@@ -10,22 +15,46 @@ import { ScrollAlong } from "./ScrollAlong";
 import { IntegratedTitle } from "./IntegratedTitle";
 import { LavaRenderer } from "./LavaRenderer";
 
-//let scrollAlong: ScrollAlong;
+let scrollAlong: ScrollAlong;
 let view: SceneView;
 let lavaRenderer: LavaRenderer;
 //let title: IntegratedTitle;
 
-export function run() {
+export async function run() {
+  const layer = new FeatureLayer({
+    url: "https://services2.arcgis.com/cFEFS0EWrhfDeVw9/ArcGIS/rest/services/PB2002_boundaries/FeatureServer/0",
+    definitionExpression: "Name = 'EU-IN'",
+    renderer: {
+      type: "simple",
+      symbol: {
+        type: "line-3d",
+        symbolLayers: [
+          {
+            type: "line",
+            size: 5,
+            material: {
+              color: "red"
+            }
+          }
+        ]
+      }
+    } as any
+  });
+
+  const tectonicPath = await getTectonicPath(layer);
+
   const map = createMap();
+  map.layers.add(layer);
+
   const viewport = new Viewport();
   
   view = createView({ map, viewport });
-  new ScrollAlong({ view, viewport });
+  scrollAlong = new ScrollAlong({ view, viewport, path: tectonicPath });
 
   const titleElement = document.getElementById("title");
-  new IntegratedTitle({ view, viewport, element: titleElement, elevation: 14000 });
+  new IntegratedTitle({ view, viewport, element: titleElement, elevation: 10000 });
 
-  lavaRenderer = new LavaRenderer({ view });
+  lavaRenderer = new LavaRenderer({ view, bottom: -4000 });
 
   view.on("key-down", ev => {
     if (ev.key === " ") {
@@ -34,6 +63,18 @@ export function run() {
   })
 
   window["view"] = view;
+
+  scrollAlong;
+}
+
+async function getTectonicPath(layer: FeatureLayer) {
+  const featureSet = await layer.queryFeatures({
+    where: "Name = 'EU-IN'",
+    returnGeometry: true,
+    outSpatialReference: SpatialReference.WebMercator
+  });
+
+  return featureSet.features[1].geometry as Polyline;
 }
 
 function createView(params: { map: Map; viewport: Viewport }) {
@@ -42,9 +83,9 @@ function createView(params: { map: Map; viewport: Viewport }) {
     map: params.map,
     viewingMode: "local",
     camera: {
-      position: { x: -69.79518411, y: -30.76825783, z: 14861.17659 },
-      heading: 330.31,
-      tilt: 82.12
+      position: { x: 72.76947985, y: 34.40839622, z: 24469.61681 },
+      heading: 137.25,
+      tilt: 62.75
     },
     environment: {
       atmosphere: { 
@@ -82,7 +123,7 @@ function createMap() {
     ground: {
       layers: [
         new ExaggerationElevationLayer({
-          exaggerationFactor: 2,
+          exaggerationFactor: 3,
           elevationLayer: worldElevationLayer
         })
       ]

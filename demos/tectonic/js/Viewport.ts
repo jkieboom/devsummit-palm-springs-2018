@@ -13,8 +13,8 @@ export class Viewport extends declared(Accessor) {
 
   @property()
   center: Point = new Point({
-    x: -7792590.411313316,
-    y: -3559092.9854301936,
+    x: 8129617.88483645,
+    y: 4052445.62428827,
     spatialReference: SpatialReference.WebMercator
   })
 

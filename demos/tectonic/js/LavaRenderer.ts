@@ -29,6 +29,9 @@ export class LavaRenderer extends declared(Accessor) {
   @property({ constructOnly: true })
   readonly view: esri.SceneView;
 
+  @property({ constructOnly: true })
+  readonly bottom: number = 0;
+
   @property({ value: true })
   set playing(value: boolean) {
     this._set("playing", value);
@@ -129,12 +132,17 @@ export class LavaRenderer extends declared(Accessor) {
         varying vec2 vUV;
 
         void main() {
-          vUV = aUV * uResolution - vec2(0, 150);
+          vUV = aUV * uResolution - vec2(0, 100);
           gl_Position = uProjectionMatrix * uViewMatrix * vec4(aVertexPosition, 1);
         }
       `,
 
-      // Fragment shader
+      // Fragment shader.
+      //
+      // Shader adapted from https://www.shadertoy.com/view/Xtf3WB.
+      // Full credit goes to https://www.shadertoy.com/user/nexor.
+      // https://www.shadertoy.com/terms
+      // CC BY-NC-SA 3.0
       `
         precision highp float;
 
@@ -364,7 +372,7 @@ export class LavaRenderer extends declared(Accessor) {
     const point0 = new Point({ x: 0, y: 0, spatialReference });
     const point1 = new Point({ x: 0, y: 0, spatialReference });
 
-    const maxZ = 15000;
+    const maxZ = 10000;
 
     for (let i = 0; i < nSegments; i++) {
       const pos0 = i / nSegments;
@@ -378,8 +386,8 @@ export class LavaRenderer extends declared(Accessor) {
       point1.y = ymin + dy * pos1;
       point1.z = sampler.elevationAt(point1) || 0;
 
-      const zRel0 = 1.0 - point0.z / maxZ;
-      const zRel1 = 1.0 - point1.z / maxZ;
+      const zRel0 = 1.0 - (point0.z - this.bottom) / maxZ;
+      const zRel1 = 1.0 - (point1.z - this.bottom) / maxZ;
 
       buffer[offset++] = point0.x;
       buffer[offset++] = point0.y;
@@ -390,14 +398,14 @@ export class LavaRenderer extends declared(Accessor) {
 
       buffer[offset++] = point0.x;
       buffer[offset++] = point0.y;
-      buffer[offset++] = 0;
+      buffer[offset++] = this.bottom;
 
       buffer[offset++] = pos0;
       buffer[offset++] = 1;
 
       buffer[offset++] = point1.x;
       buffer[offset++] = point1.y;
-      buffer[offset++] = 0;
+      buffer[offset++] = this.bottom;
 
       buffer[offset++] = pos1;
       buffer[offset++] = 1;
@@ -411,7 +419,7 @@ export class LavaRenderer extends declared(Accessor) {
 
       buffer[offset++] = point1.x;
       buffer[offset++] = point1.y;
-      buffer[offset++] = 0;
+      buffer[offset++] = this.bottom;
 
       buffer[offset++] = pos1;
       buffer[offset++] = 1;
@@ -430,6 +438,7 @@ const tmpOrigin = [0, 0, 0];
 
 interface ConstructProperties {
   view: esri.SceneView;
+  bottom: number;
 }
 
 export default LavaRenderer;

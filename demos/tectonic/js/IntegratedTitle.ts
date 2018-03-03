@@ -44,8 +44,8 @@ export class IntegratedTitle extends declared(Accessor) {
     }
 
     const clip = this.view.clippingArea;
-    const pt1 = new Point({ x: clip.xmin, y: clip.ymax, z: this.elevation, spatialReference: clip.spatialReference });
-    const pt2 = new Point({ x: clip.xmax, y: clip.ymax, z: this.elevation, spatialReference: clip.spatialReference });
+    const pt1 = new Point({ x: clip.xmin, y: clip.ymin, z: this.elevation, spatialReference: clip.spatialReference });
+    const pt2 = new Point({ x: clip.xmax, y: clip.ymin, z: this.elevation, spatialReference: clip.spatialReference });
 
     const s1 = this.view.toScreen(pt1);
     const s2 = this.view.toScreen(pt2);
@@ -57,7 +57,7 @@ export class IntegratedTitle extends declared(Accessor) {
     const ry = -(heading < 180 ? heading + 360 : heading);
 
     const translate = "translate(" + dx + "px, " + dy + "px)";
-    const rotate = "rotateX(" +(90 - this.view.camera.tilt) + "deg) rotateY(" + ry + "deg)"
+    const rotate = "rotateX(" +(90 - this.view.camera.tilt) + "deg) rotateY(" + (ry + 180) + "deg)"
 
     this.element.style.transform = translate + rotate;
   }
