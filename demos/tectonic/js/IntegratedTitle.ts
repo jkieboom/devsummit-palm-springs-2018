@@ -29,7 +29,7 @@ export class IntegratedTitle extends declared(Accessor) {
   }
 
   initialize() {
-    this.view.watch("camera", () => this.update());
+    this.view.watch(["camera", "size"], () => this.update());
     this.viewport.watch("clippingArea", () => this.update());
 
     this.update();
