@@ -26,7 +26,12 @@ export function run() {
   new IntegratedTitle({ view, viewport, element: titleElement, elevation: 14000 });
 
   lavaRenderer = new LavaRenderer({ view });
-  lavaRenderer;
+
+  view.on("key-down", ev => {
+    if (ev.key === " ") {
+      lavaRenderer.playing = !lavaRenderer.playing;
+    }
+  })
 
   window["view"] = view;
 }

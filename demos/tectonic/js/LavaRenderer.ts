@@ -23,9 +23,20 @@ export class LavaRenderer extends declared(Accessor) {
   private numVertices = 0;
   private viewMatrix = mat4.create();
   private vertexPositionAttributeLocation: number;
+  private uvAttributeLocation: number;
+  private time = 0;
 
   @property({ constructOnly: true })
   readonly view: esri.SceneView;
+
+  @property({ value: true })
+  set playing(value: boolean) {
+    this._set("playing", value);
+
+    if (value) {
+      externalRenderers.requestRender(this.view);
+    }
+  }
 
   constructor(obj: ConstructProperties) {
     super();
@@ -66,18 +77,30 @@ export class LavaRenderer extends declared(Accessor) {
     const viewMatrix = mat4.translate(this.viewMatrix, camera.viewMatrix, this.origin);
     gl.uniformMatrix4fv(uniformLocations.uViewMatrix, false, viewMatrix);
     gl.uniformMatrix4fv(uniformLocations.uProjectionMatrix, false, camera.projectionMatrix);
+    gl.uniform1f(uniformLocations.uTime, this.time);
+    gl.uniform2f(uniformLocations.uResolution, 800, 800);
+
+    this.time += 0.01;
 
     // Bind vertex buffer object and setup attribute pointers
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 
     // Vertex position
     gl.enableVertexAttribArray(this.vertexPositionAttributeLocation);
-    gl.vertexAttribPointer(this.vertexPositionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.vertexPositionAttributeLocation, 3, gl.FLOAT, false, 20, 0);
+
+    // UV
+    gl.enableVertexAttribArray(this.uvAttributeLocation);
+    gl.vertexAttribPointer(this.uvAttributeLocation, 2, gl.FLOAT, false, 20, 12);
 
     gl.drawArrays(gl.TRIANGLES, 0, this.numVertices);
 
     // Make sure to reset the WebGL state when finishing the render
     context.resetWebGLState();
+
+    if (this.playing) {
+      externalRenderers.requestRender(this.view);
+    }
   }
 
   private initializeVertexBufferObject(context: esri.RenderContext) {
@@ -95,11 +118,16 @@ export class LavaRenderer extends declared(Accessor) {
         precision highp float;
 
         attribute vec3 aVertexPosition;
+        attribute vec2 aUV;
 
         uniform mat4 uViewMatrix;
         uniform mat4 uProjectionMatrix;
+        uniform vec2 uResolution;
+
+        varying vec2 vUV;
 
         void main() {
+          vUV = aUV * uResolution - vec2(0, 150);
           gl_Position = uProjectionMatrix * uViewMatrix * vec4(aVertexPosition, 1);
         }
       `,
@@ -108,16 +136,140 @@ export class LavaRenderer extends declared(Accessor) {
       `
         precision highp float;
 
+        uniform float uTime;
+        uniform vec2 uResolution;
+
+        varying vec2 vUV;
+
+        float hash(float n) {
+          return fract(sin(n) * 43758.5453);
+        }
+
+        float noise(vec2 uv) {
+          vec3 x = vec3(uv, 0);
+
+          vec3 p = floor(x);
+          vec3 f = fract(x);
+
+          f = f * f * (3.0 - 2.0 * f);
+          float n = p.x + p.y * 57.0 + 113.0 * p.z;
+
+          return mix(mix(mix(hash(n+0.0), hash(n+1.0),f.x),
+                         mix(hash(n+57.0), hash(n+58.0),f.x),f.y),
+                      mix(mix( hash(n+113.0), hash(n+114.0),f.x),
+                          mix( hash(n+170.0), hash(n+171.0),f.x),f.y),f.z);
+        }
+
+        mat2 m = mat2(0.8, 0.6, -0.6, 0.8);
+
+        float fbm(vec2 p) {
+            float f = 0.0;
+
+            f += 0.5000*noise( p ); p*=m*2.02;
+            f += 0.2500*noise( p ); p*=m*2.03;
+            f += 0.1250*noise( p ); p*=m*2.01;
+            f += 0.0625*noise( p );
+
+            f /= 0.9375;
+            return f;
+        }
+
+        vec3 voronoi( in vec2 x ) {
+            ivec2 p = ivec2(floor( x ));
+            vec2 f = fract(x);
+
+            ivec2 mb = ivec2(0);
+            vec2 mr = vec2(0.0);
+            vec2 mg = vec2(0.0);
+
+            float md = 8.0;
+            for(int j=-1; j<=1; ++j)
+            for(int i=-1; i<=1; ++i)
+            {
+                ivec2 b = ivec2( i, j );
+                vec2  r = vec2( b ) + noise( vec2(p + b) ) - f;
+                vec2 g = vec2(float(i),float(j));
+                vec2 o = vec2(noise( vec2(p) + g ));
+                float d = length(r);
+
+                if( d<md )
+                {
+                    md = d;
+                    mr = r;
+                    mg = g;
+                }
+            }
+
+            md = 8.0;
+            for(int j=-2; j<=2; ++j) {
+              for(int i=-2; i<=2; ++i) {
+                  ivec2 b = ivec2( i, j );
+                  vec2 r = vec2( b ) + noise( vec2(p + b) ) - f;
+
+
+                  if( length(r-mr)>0.00001 )
+                  md = min( md, dot( 0.5*(mr+r), normalize(r-mr) ) );
+              }
+            }
+            return vec3( md, mr );
+        }
+
+        vec2 tr(vec2 p) {
+            p = -1.0+2.0*(p/uResolution.xy);
+            p.x *= uResolution.x/uResolution.y;
+            return p;
+        }
+
         void main() {
-          gl_FragColor = vec4(1, 0, 1, 1);
+          float map_radius = mod(600.0 - 250.0 ,600.0);
+          vec2 focus = vec2(0.0,map_radius);
+          float crack_radius = 50.0;
+
+          float radius = max(1e-20,map_radius);
+          vec2 fc = vUV + focus - uResolution / 2.0;
+          vec2 p = tr(fc);
+
+          vec3 col = 	vec3(0.0);
+
+          vec3 lava = vec3(0.0);
+          vec3 ground = vec3(0.5,0.3,0.1);
+          float vor = 0.0;
+          float len = length(fc.y) + cos(fbm(p*15.0)*15.0)*15.0;
+            float crack = smoothstep(radius-crack_radius,radius,len);
+
+          {
+            float val = 1.0 + cos(p.x*p.y + fbm(p*5.0) * 20.0 + uTime*2.0)/ 2.0;
+            lava = vec3(val*1.0, val*0.33, val*0.1);
+            lava = mix(lava*0.95,lava,len-radius);
+            lava *= exp(-1.8);
+          }
+
+          {
+            float val = 1.0 + sin(fbm(p * 7.5) * 8.0) / 2.0;
+            ground *= exp(-val*0.3);
+            vec3 sand = vec3(0.2,0.25,0.0);
+            ground = mix(ground,sand,val*0.1);
+          }
+
+          {
+            vor = voronoi(p*3.5).x*(1.0-crack)*0.75;
+            vor = 1.0-vor;
+            vor *= smoothstep(0.0,radius,len);
+          }
+
+          col = mix(ground,lava,crack);
+          col = mix(col,lava,smoothstep(radius-crack_radius,radius,vor*radius));
+
+          gl_FragColor = vec4(col, 1.0);
         }
       `,
 
       // Uniform names
-      ["uViewMatrix", "uProjectionMatrix"]
+      ["uViewMatrix", "uProjectionMatrix", "uTime", "uResolution"]
     );
 
     this.vertexPositionAttributeLocation = gl.getAttribLocation(this.program.program, "aVertexPosition");
+    this.uvAttributeLocation = gl.getAttribLocation(this.program.program, "aUV");
   }
 
   private update(context: esri.RenderContext) {
@@ -134,7 +286,7 @@ export class LavaRenderer extends declared(Accessor) {
     gl.bufferData(gl.ARRAY_BUFFER, bufferData.buffer, gl.STATIC_DRAW);
 
     vec3.copy(this.origin as any, bufferData.origin);
-    this.numVertices = bufferData.buffer.length / 3;
+    this.numVertices = bufferData.buffer.length / 5;
   }
 
   private requestUpdate() {
@@ -150,13 +302,16 @@ export class LavaRenderer extends declared(Accessor) {
     const nSides = 4;
     const nVerticesPerSegment = 6;
     const nSegments = nSamples - 1;
-    const sideStride = nSegments * nVerticesPerSegment * 3;
+    const sideStride = nSegments * (nVerticesPerSegment * 3 + nVerticesPerSegment * 2);
     const buffer = new Float64Array(sideStride * nSides);
 
     this.sampleAlong(c.xmin, c.xmax, c.ymin, c.ymin, c.spatialReference, nSamples, buffer, 0 * sideStride);
     this.sampleAlong(c.xmax, c.xmax, c.ymin, c.ymax, c.spatialReference, nSamples, buffer, 1 * sideStride);
     this.sampleAlong(c.xmax, c.xmin, c.ymax, c.ymax, c.spatialReference, nSamples, buffer, 2 * sideStride);
     this.sampleAlong(c.xmin, c.xmin, c.ymax, c.ymin, c.spatialReference, nSamples, buffer, 3 * sideStride);
+
+    this.flipUV(buffer, sideStride, 1);
+    this.flipUV(buffer, sideStride, 3);
 
     const origin = vec3.set(tmpOrigin as any, c.center.x, c.center.y, 0);
     const bufferInOrigin = new Float32Array(buffer.length);
@@ -166,7 +321,7 @@ export class LavaRenderer extends declared(Accessor) {
 
     // Expand a bit from the center so we don't have issues with z-fighting of the
     // terrain skirts
-    for (let i = 0; i < bufferInOrigin.length; i += 3) {
+    for (let i = 0; i < bufferInOrigin.length; i += 5) {
       bufferInOrigin[i + 0] *= eps;
       bufferInOrigin[i + 1] *= eps;
     }
@@ -176,11 +331,24 @@ export class LavaRenderer extends declared(Accessor) {
     return { buffer: bufferInOrigin, origin };
   }
 
+  private flipUV(buffer: Float64Array, stride: number, idx: number) {
+    const start = idx * stride;
+    const end = start + stride;
+
+    for (let i = start; i < end; i += 5) {
+      buffer[i + 3] = 1 - buffer[i + 3];
+    }
+  }
+
   private subtractOrigin(out: Float32Array, buffer: Float64Array, origin: ArrayLike<number>) {
-    for (let i = 0; i < buffer.length; i += 3) {
+    for (let i = 0; i < buffer.length; i += 5) {
       out[i + 0] = buffer[i + 0] - origin[0];
       out[i + 1] = buffer[i + 1] - origin[1];
       out[i + 2] = buffer[i + 2] - origin[2];
+
+      // UV
+      out[i + 3] = buffer[i + 3];
+      out[i + 4] = buffer[i + 4];
     }
   }
 
@@ -194,6 +362,8 @@ export class LavaRenderer extends declared(Accessor) {
     const point0 = new Point({ x: 0, y: 0, spatialReference });
     const point1 = new Point({ x: 0, y: 0, spatialReference });
 
+    const maxZ = 15000;
+
     for (let i = 0; i < nSegments; i++) {
       const pos0 = i / nSegments;
       const pos1 = (i + 1) / nSegments;
@@ -206,29 +376,50 @@ export class LavaRenderer extends declared(Accessor) {
       point1.y = ymin + dy * pos1;
       point1.z = sampler.elevationAt(point1) || 0;
 
-      buffer[offset++] = point0.x;
-      buffer[offset++] = point0.y;
-      buffer[offset++] = point0.z;
-
-      buffer[offset++] = point0.x;
-      buffer[offset++] = point0.y;
-      buffer[offset++] = 0;
-
-      buffer[offset++] = point1.x;
-      buffer[offset++] = point1.y;
-      buffer[offset++] = 0;
+      const zRel0 = 1.0 - point0.z / maxZ;
+      const zRel1 = 1.0 - point1.z / maxZ;
 
       buffer[offset++] = point0.x;
       buffer[offset++] = point0.y;
       buffer[offset++] = point0.z;
 
+      buffer[offset++] = pos0;
+      buffer[offset++] = zRel0;
+
+      buffer[offset++] = point0.x;
+      buffer[offset++] = point0.y;
+      buffer[offset++] = 0;
+
+      buffer[offset++] = pos0;
+      buffer[offset++] = 1;
+
       buffer[offset++] = point1.x;
       buffer[offset++] = point1.y;
       buffer[offset++] = 0;
+
+      buffer[offset++] = pos1;
+      buffer[offset++] = 1;
+
+      buffer[offset++] = point0.x;
+      buffer[offset++] = point0.y;
+      buffer[offset++] = point0.z;
+
+      buffer[offset++] = pos0;
+      buffer[offset++] = zRel0;
+
+      buffer[offset++] = point1.x;
+      buffer[offset++] = point1.y;
+      buffer[offset++] = 0;
+
+      buffer[offset++] = pos1;
+      buffer[offset++] = 1;
 
       buffer[offset++] = point1.x;
       buffer[offset++] = point1.y;
       buffer[offset++] = point1.z;
+
+      buffer[offset++] = pos1;
+      buffer[offset++] = zRel1;
     }
   }
 }
