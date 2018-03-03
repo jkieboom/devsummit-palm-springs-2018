@@ -80,7 +80,9 @@ export class LavaRenderer extends declared(Accessor) {
     gl.uniform1f(uniformLocations.uTime, this.time);
     gl.uniform2f(uniformLocations.uResolution, 800, 800);
 
-    this.time += 0.01;
+    if (this.playing) {
+      this.time += 0.01;
+    }
 
     // Bind vertex buffer object and setup attribute pointers
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
