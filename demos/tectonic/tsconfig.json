@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "inlineSourceMap": false,
+    "module": "amd",
+    "noEmitHelpers": true,
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitUseStrict": true,
+    "noStrictGenericChecks": true,
+    "noUnusedLocals": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "target": "es5",
+    "lib": [
+      "dom",
+      "es2015.promise",
+      "scripthost",
+      "es5"
+    ]
+  },
+  "include": [
+    "js/**/*",
+    "typings/**/*"
+  ]
+}

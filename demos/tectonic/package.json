@@ -1,0 +1,17 @@
+{
+  "name": "tectonic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/gl-matrix": "^2.4.0",
+    "gl-matrix": "^2.4.0",
+    "typescript": "^2.7.2"
+  }
+}

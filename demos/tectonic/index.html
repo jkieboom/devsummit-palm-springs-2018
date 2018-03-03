@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tectonic plates</title>
+
+<script>
+  var dojoConfig = {
+    has: {
+      "esri-promise-compatibility": false
+    }
+  };
+</script>
+
+<link rel="stylesheet" href="../../../arcgis-js-api-4/esri/css/main.css">
+<script src="../../../arcgis-js-api-4/test-apps/dojo-config.js"></script>
+<script src="../../../arcgis-js-api-4/dojo/dojo.js"></script>
+
+<link rel="stylesheet" href="./css/app.css">
+
+<!-- <link rel="stylesheet" href="https://jsdev.arcgis.com/4.7/esri/css/main.css">
+<script src="https://jsdev.arcgis.com/4.7"></script> -->
+
+<script>
+  const pathname = document.location.pathname.replace(/\/+$/, "");
+
+  require({
+    packages: [{
+      name: "app",
+      location: pathname + "/js/"
+    }, {
+      name: "gl-matrix",
+      main: "gl-matrix",
+      location: pathname + "/node_modules/gl-matrix/dist"
+    }]
+  }, [
+    "app/app",
+    "dojo/domReady!"
+  ], function (app) {
+    app.run();
+  });
+</script>
+
+</head>
+<body>
+  <div id="viewDiv">
+  </div>
+
+  <div id="title" class="delayed-visible">Tectonic plates</div>
+</body>
+</html>
