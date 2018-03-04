@@ -67,6 +67,8 @@ export async function run() {
   scrollAlong;
 }
 
+// Query features from the service, use the second
+// path in the serfice as the one to follow.
 async function getTectonicPath(layer: FeatureLayer) {
   const featureSet = await layer.queryFeatures({
     where: "Name = 'EU-IN'",
@@ -77,6 +79,7 @@ async function getTectonicPath(layer: FeatureLayer) {
   return featureSet.features[1].geometry as Polyline;
 }
 
+// Create a local view with the provided map and clipping area
 function createView(params: { map: Map; viewport: Viewport }) {
   return new SceneView({
     container: "viewDiv",
@@ -96,6 +99,13 @@ function createView(params: { map: Map; viewport: Viewport }) {
   });
 }
 
+// Create the basic map with custom layers that improve perception
+// of mountains and ridges:
+//
+// 1. A basmap containing a custom layer that blends
+//    hill shading on top of satellite imagery
+// 2. A ground containing a custom elevation layer that exaggerates
+//    elevation
 function createMap() {
   const hillShadeLayer = new TileLayer({
     url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer"
