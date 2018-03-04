@@ -102,6 +102,15 @@ export async function run() {
         });
 
         map.add(platesLayer);
+
+        // HACKS HACKS HACKS
+        view.whenLayerView(platesLayer).then(lv => {
+          (lv as any).updateClippingExtent = () => true;
+        }, err => console.error(err));
+
+        view.whenLayerView(pathLayer).then(lv => {
+          (lv as any).updateClippingExtent = () => true;
+        }, err => console.error(err));
       });
 
   window.view = view;

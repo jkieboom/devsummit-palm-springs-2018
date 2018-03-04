@@ -311,12 +311,12 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
   }
 
   private update() {
-    // Remove all graphics and recreate them.
-    this.graphics.removeAll();
-
     if (!this.measurements) {
+      this.graphics.removeAll();
       return;
     }
+
+    const currentGraphics = this.graphics.toArray();
 
     const nSlices: number = 5;
     const clip = this.clippingArea;
@@ -350,6 +350,8 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
 
       this.graphics.add(g3);
     }
+
+    this.graphics.removeMany(currentGraphics);
   }
 
   private findMeasurementAt(x: number, ymin: number, ymax: number): Measurement {
