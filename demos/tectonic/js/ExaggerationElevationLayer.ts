@@ -28,8 +28,7 @@ export class ExaggerationElevationLayer extends declared(BaseElevationLayer) {
   }
 
   fetchTile(level: number, row: number, col: number) {
-    return promiseUtils.resolve()
-        .then(() => this._fetchTile(level, row, col));
+    return this._fetchTile(level, row, col) as any;
   }
 
   private async _fetchTile(level: number, row: number, col: number) {

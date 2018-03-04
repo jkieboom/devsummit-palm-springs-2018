@@ -30,14 +30,17 @@ export class BlendLayer extends declared(BaseTileLayer) {
   // Fetches the tile(s) visible in the view
   fetchTile(level: number, row: number, col: number) {
     return promiseUtils.resolve()
-        .then(() => this._fetchTile(level, row, col));
+        .then(() => this._fetchTile(level, row, col) as any);
   }
 
   private async _fetchTile(level: number, row: number, col: number) {
     const tilePromises = this.multiplyLayers.map(layer => {
       // calls fetchTile() on the tile layers returned in multiplyLayers property
       // for the tiles visible in the view
-      return layer.fetchTile(level, row, col, { allowImageDataAccess: true });
+      return new Promise<HTMLImageElement | HTMLCanvasElement>((resolve, reject) => {
+        layer.fetchTile(level, row, col, { allowImageDataAccess: true })
+            .then(resolve, reject)
+      });
     });
 
     const images = await Promise.all(tilePromises);

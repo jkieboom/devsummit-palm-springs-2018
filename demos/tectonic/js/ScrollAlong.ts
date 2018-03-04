@@ -14,8 +14,8 @@ import { vec2 } from "gl-matrix";
 @subclass()
 export class ScrollAlong extends declared(Accessor) {
   private interpolatedPath: CatmullRom;
-  // private interpolatedHeading: CatmullRom;
   private positionOnPath = 0;
+  private userHeadingDelta = 0;
 
   @property({ constructOnly: true })
   readonly view: esri.SceneView;
@@ -35,29 +35,8 @@ export class ScrollAlong extends declared(Accessor) {
     this.viewport.watch("clippingArea", (newValue, oldValue) => this.update(newValue, oldValue));
 
     const path = this.path.paths[0];
-    
+
     this.interpolatedPath = new CatmullRom({ points: path });
-    
-    // const headings = this.pathToHeadings(path);
-    // this.interpolatedHeading = new CatmullRom({ points: headings, lengthNormalizationPoints: path });
-  }
-
-  // private pathToHeadings(path: ArrayLike<ArrayLike<number>>) {
-  //   const headings: ArrayLike<number>[] = [0];
-    
-  //   for (let i = 0; i < path.length - 1; i++) {
-  //     headings.push([this.computeHeading(path[i], path[i + 1])]);
-  //   }
-
-  //   headings.push(headings[headings.length - 1]);
-  //   return headings;
-  // }
-
-  private computeHeading(pt1: ArrayLike<number>, pt2: ArrayLike<number>) {
-    const dir = vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), pt2 as any, pt1 as any));
-    const heading = Math.atan2(dir[0], dir[1]);
-
-    return heading;
   }
 
   private onMouseWheel(ev: esri.SceneViewMouseWheelEvent) {
@@ -72,6 +51,18 @@ export class ScrollAlong extends declared(Accessor) {
   }
 
   private moveAlongPath(delta: number) {
+    // Calculate the desired heading along the path
+    const pathHeading = this.calculatePathHeading(this.positionOnPath);
+
+    // Store the delta between the desired and current heading
+    // so we preserve heading offset caused by user interaction
+    const userHeadingDelta = this.view.camera.heading - pathHeading;
+
+    // Clip down to 0 to avoid drifting caused by numerical errors
+    if (Math.abs(userHeadingDelta - this.userHeadingDelta) > 1) {
+      this.userHeadingDelta = userHeadingDelta;
+    }
+
     const newPosition = this.positionOnPath + delta;
     this.positionOnPath = Math.min(Math.max(0, newPosition), 1);
 
@@ -84,17 +75,28 @@ export class ScrollAlong extends declared(Accessor) {
     });
   }
 
-  private update(newValue: Extent, oldValue: Extent) {
-    // const dx = newValue.center.x - oldValue.center.x;
-    // const dy = newValue.center.y - oldValue.center.y;
-
-    const p0 = this.interpolatedPath.evaluateAt(this.positionOnPath - 0.001);
-    const p1 = this.interpolatedPath.evaluateAt(this.positionOnPath);
-    const p2 = this.interpolatedPath.evaluateAt(this.positionOnPath + 0.001);
+  private calculatePathHeading(t: number) {
+    // Three point average heading at the interpolated path
+    const p0 = this.interpolatedPath.evaluateAt(t - 0.001);
+    const p1 = this.interpolatedPath.evaluateAt(t);
+    const p2 = this.interpolatedPath.evaluateAt(t + 0.001);
 
     const h1 = this.computeHeading(p0, p1);
     const h2 = this.computeHeading(p1, p2);
-    const heading = (h1 + h2) / 2 / Math.PI * 180;
+    return (h1 + h2) / 2;
+  }
+
+    // Compute heading from a vector specified by two points
+    private computeHeading(pt1: ArrayLike<number>, pt2: ArrayLike<number>) {
+      const dir = vec2.normalize(vec2.create(), vec2.subtract(vec2.create(), pt2 as any, pt1 as any));
+      const heading = Math.atan2(dir[0], dir[1]);
+
+      // Convert to degrees
+      return heading / Math.PI * 180;
+    }
+
+  private update(newValue: Extent, oldValue: Extent) {
+    const heading = this.calculatePathHeading(this.positionOnPath) + this.userHeadingDelta;
 
     this.view.clippingArea = this.viewport.clippingArea;
 
@@ -106,10 +108,12 @@ export class ScrollAlong extends declared(Accessor) {
       scale: 171502,
       heading
     }, { animate: false });
+
+    console.log(heading, this.view.camera.heading);
   }
 }
 
-interface ConstructProperties { 
+interface ConstructProperties {
   view: esri.SceneView;
   viewport: Viewport;
   path: Polyline;

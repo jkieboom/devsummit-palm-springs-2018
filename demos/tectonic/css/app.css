@@ -6,6 +6,14 @@ html, body, #viewDiv {
   font-family: "Avenir Next";
 }
 
+#overviewDiv {
+  width: 300px;
+  height: 200px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
 .delayed-visible {
   opacity: 0;
   transition: opacity 300ms ease;
@@ -20,7 +28,7 @@ html, body, #viewDiv {
   position: absolute;
   top: 0; left: 0;
   font-size: 3em;
-  text-shadow: -1px -1px 0 #fff,  
+  text-shadow: -1px -1px 0 #fff,
     1px -1px 0 #fff,
     -1px 1px 0 #fff,
      1px 1px 0 #fff;

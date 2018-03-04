@@ -163,6 +163,8 @@ declare namespace __esri {
 
   export type ElevationLayerLayerviewDestroyEventHandler = (event: ElevationLayerLayerviewDestroyEvent) => void;
 
+  export type ElevationSamplerChangedEventHandler = (event: ElevationSamplerChangedEvent) => void;
+
   export type FeatureLayerLayerviewCreateEventHandler = (event: FeatureLayerLayerviewCreateEvent) => void;
 
   export type FeatureLayerLayerviewDestroyEventHandler = (event: FeatureLayerLayerviewDestroyEvent) => void;
@@ -6245,11 +6247,7 @@ properties.
 
     on(name: "credential-create", eventHandler: IdentityManagerCredentialCreateEventHandler): IHandle;
 
-    on(name: "credential-create", modifiers: string[], eventHandler: IdentityManagerCredentialCreateEventHandler): IHandle;
-
     on(name: "credentials-destroy", eventHandler: IdentityManagerCredentialsDestroyEventHandler): IHandle;
-
-    on(name: "credentials-destroy", modifiers: string[], eventHandler: IdentityManagerCredentialsDestroyEventHandler): IHandle;
   }
 
   interface IdentityManagerConstructor {
@@ -6976,11 +6974,7 @@ Override this method to construct the URL for the image based on user interactio
 
     on(name: "layerview-create", eventHandler: BaseDynamicLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: BaseDynamicLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: BaseDynamicLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: BaseDynamicLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface BaseDynamicLayerConstructor {
@@ -7100,11 +7094,7 @@ the desired data for the given extent. See the
 
     on(name: "layerview-create", eventHandler: BaseElevationLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: BaseElevationLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: BaseElevationLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: BaseElevationLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface BaseElevationLayerConstructor {
@@ -7285,11 +7275,7 @@ Override this method to construct the URL for the image based on user interactio
 
     on(name: "layerview-create", eventHandler: BaseTileLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: BaseTileLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: BaseTileLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: BaseTileLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface BaseTileLayerConstructor {
@@ -7548,11 +7534,7 @@ satisfying the layer's configuration/filters are returned.
 
     on(name: "layerview-create", eventHandler: CSVLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: CSVLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: CSVLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: CSVLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface CSVLayerConstructor {
@@ -8006,11 +7988,7 @@ for each coordinate.
 
     on(name: "layerview-create", eventHandler: ElevationLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: ElevationLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: ElevationLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: ElevationLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface ElevationLayerConstructor {
@@ -8561,11 +8539,7 @@ note that `intersects` is the only supported operation.
 
     on(name: "layerview-create", eventHandler: FeatureLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: FeatureLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: FeatureLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: FeatureLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface FeatureLayerConstructor {
@@ -9304,11 +9278,7 @@ intersect on screen. Label deconfliction also respects this option and hides lab
 
     on(name: "layerview-create", eventHandler: GeoRSSLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: GeoRSSLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: GeoRSSLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: GeoRSSLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface GeoRSSLayerConstructor {
@@ -9441,11 +9411,7 @@ To add a graphic to the GraphicsLayer use [add()](https://developers.arcgis.com/
 
     on(name: "layerview-create", eventHandler: GraphicsLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: GraphicsLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: GraphicsLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: GraphicsLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface GraphicsLayerConstructor {
@@ -9584,11 +9550,7 @@ exclusive | Only one child layer is visible at a time.
 
     on(name: "layerview-create", eventHandler: GroupLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: GroupLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: GroupLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: GroupLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface GroupLayerConstructor {
@@ -9680,11 +9642,7 @@ values, and change their color.
 
     on(name: "layerview-create", eventHandler: ImageryLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: ImageryLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: ImageryLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: ImageryLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface ImageryLayerConstructor {
@@ -9757,11 +9715,7 @@ below the ground.
 
     on(name: "layerview-create", eventHandler: IntegratedMeshLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: IntegratedMeshLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: IntegratedMeshLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: IntegratedMeshLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface IntegratedMeshLayerConstructor {
@@ -9850,11 +9804,7 @@ absolute-height | The mesh is placed at an absolute height above sea level. This
 
     on(name: "layerview-create", eventHandler: KMLLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: KMLLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: KMLLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: KMLLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface KMLLayerConstructor {
@@ -10125,11 +10075,7 @@ Online or ArcGIS Enterprise portal item from which to load the layer.
 
     on(name: "layerview-create", eventHandler: MapImageLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: MapImageLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: MapImageLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: MapImageLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface MapImageLayerConstructor {
@@ -10164,11 +10110,7 @@ Online or ArcGIS Enterprise portal item from which to load the layer.
 
     on(name: "layerview-create", eventHandler: MapNotesLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: MapNotesLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: MapNotesLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: MapNotesLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface MapNotesLayerConstructor {
@@ -11134,11 +11076,7 @@ If [layerId](https://developers.arcgis.com/javascript/latest/api-reference/esri-
 
     on(name: "layerview-create", eventHandler: OpenStreetMapLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: OpenStreetMapLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: OpenStreetMapLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: OpenStreetMapLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface OpenStreetMapLayerConstructor {
@@ -11202,11 +11140,7 @@ visualize each point in the layer.
 
     on(name: "layerview-create", eventHandler: PointCloudLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: PointCloudLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: PointCloudLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: PointCloudLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface PointCloudLayerConstructor {
@@ -11519,11 +11453,7 @@ section of the class description above.
 
     on(name: "layerview-create", eventHandler: SceneLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: SceneLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: SceneLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: SceneLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface SceneLayerConstructor {
@@ -11796,11 +11726,7 @@ If `null`, the spatial filter is cleared.
 
     on(name: "layerview-create", eventHandler: StreamLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: StreamLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: StreamLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: StreamLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface StreamLayerConstructor {
@@ -12067,21 +11993,7 @@ of the ArcGIS Platform.
     type?: string;
   }
 
-
   interface ElevationSampler {
-    /**
-     * The minimum and maximum resolution of the data in the sampler.
-     * 
-     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-support-ElevationSampler.html#demResolution)
-     */
-    readonly demResolution: ElevationSamplerDemResolution;
-    /**
-     * The extent within which it is valid to sample for elevation.
-     * 
-     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-support-ElevationSampler.html#extent)
-     */
-    readonly extent: Extent;
-
     /**
      * Sample the elevation at a specific location. Use this method to obtain
 an elevation value from the sampler at a single location. To obtain
@@ -12095,6 +12007,18 @@ geometries with z-values obtained from the elevation sampler, use
      */
     elevationAt(point: Point): number;
     /**
+     * Registers an event handler on the instance. Call this method to hook an
+event with a listener. See the [Events summary table](https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-support-ElevationSampler.html#events-summary) for a list
+of listened events.
+     * 
+     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-support-ElevationSampler.html#on)
+     * 
+     * @param type The name of the event or the events to listen for.
+     * @param handler? The function to call when the event is fired, if modifiers were specified.
+     * 
+     */
+    on(type: string | string[], handler?: Function): any;
+    /**
      * Query elevation for a point, polyline or multipoint geometry. A query will return a new geometry
 for which the z-values for each coordinate in the geometry are obtained from the elevation
 sampler. If you are only interested in the elevation value at one specific location, then you
@@ -12106,24 +12030,20 @@ can use [elevationAt()](https://developers.arcgis.com/javascript/latest/api-refe
      * 
      */
     queryElevation(geometry: Point | Multipoint | Polyline): Point | Multipoint | Polyline;
+
+
+    on(name: "changed", eventHandler: ElevationSamplerChangedEventHandler): IHandle;
   }
 
-  export const ElevationSampler: ElevationSampler;
+  interface ElevationSamplerConstructor {
 
 
-  export interface ElevationSamplerDemResolution extends Object {
-    /**
-     * The minimum resolution.
-     * 
-     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-support-ElevationSampler.html#demResolution)
-     */
-    min: number;
-    /**
-     * The maximum resolution.
-     * 
-     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-support-ElevationSampler.html#demResolution)
-     */
-    max: number;
+    new(): ElevationSampler;
+  }
+
+  export const ElevationSampler: ElevationSamplerConstructor;
+
+  export interface ElevationSamplerChangedEvent {
   }
 
   interface FeatureTemplate extends Accessor, JSONSupport {
@@ -15038,11 +14958,7 @@ resource on ArcGIS Enterprise or ArcGIS Online.
 
     on(name: "layerview-create", eventHandler: TileLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: TileLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: TileLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: TileLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface TileLayerConstructor {
@@ -15107,11 +15023,7 @@ resource on ArcGIS Enterprise or ArcGIS Online.
 
     on(name: "layerview-create", eventHandler: UnknownLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: UnknownLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: UnknownLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: UnknownLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface UnknownLayerConstructor {
@@ -15144,11 +15056,7 @@ resource on ArcGIS Enterprise or ArcGIS Online.
 
     on(name: "layerview-create", eventHandler: UnsupportedLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: UnsupportedLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: UnsupportedLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: UnsupportedLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface UnsupportedLayerConstructor {
@@ -15233,11 +15141,7 @@ equivalent of changing the entire CSS style sheet for web page.
 
     on(name: "layerview-create", eventHandler: VectorTileLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: VectorTileLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: VectorTileLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: VectorTileLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface VectorTileLayerConstructor {
@@ -15370,11 +15274,7 @@ holder if [subDomains](https://developers.arcgis.com/javascript/latest/api-refer
 
     on(name: "layerview-create", eventHandler: WebTileLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: WebTileLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: WebTileLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: WebTileLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface WebTileLayerConstructor {
@@ -15579,11 +15479,7 @@ For example, `1.3.0`, `1.1.1`, `1.1` or `1.0`.
 
     on(name: "layerview-create", eventHandler: WMSLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: WMSLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: WMSLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: WMSLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface WMSLayerConstructor {
@@ -15829,11 +15725,7 @@ Probably `1.0.0`.
 
     on(name: "layerview-create", eventHandler: WMTSLayerLayerviewCreateEventHandler): IHandle;
 
-    on(name: "layerview-create", modifiers: string[], eventHandler: WMTSLayerLayerviewCreateEventHandler): IHandle;
-
     on(name: "layerview-destroy", eventHandler: WMTSLayerLayerviewDestroyEventHandler): IHandle;
-
-    on(name: "layerview-destroy", modifiers: string[], eventHandler: WMTSLayerLayerviewDestroyEventHandler): IHandle;
   }
 
   interface WMTSLayerConstructor {
@@ -42114,19 +42006,11 @@ on the last action.
 
     on(name: "cursor-update", eventHandler: MultipointDrawActionCursorUpdateEventHandler): IHandle;
 
-    on(name: "cursor-update", modifiers: string[], eventHandler: MultipointDrawActionCursorUpdateEventHandler): IHandle;
-
     on(name: "vertex-add", eventHandler: MultipointDrawActionVertexAddEventHandler): IHandle;
-
-    on(name: "vertex-add", modifiers: string[], eventHandler: MultipointDrawActionVertexAddEventHandler): IHandle;
 
     on(name: "vertex-remove", eventHandler: MultipointDrawActionVertexRemoveEventHandler): IHandle;
 
-    on(name: "vertex-remove", modifiers: string[], eventHandler: MultipointDrawActionVertexRemoveEventHandler): IHandle;
-
     on(name: "draw-complete", eventHandler: MultipointDrawActionDrawCompleteEventHandler): IHandle;
-
-    on(name: "draw-complete", modifiers: string[], eventHandler: MultipointDrawActionDrawCompleteEventHandler): IHandle;
   }
 
   interface MultipointDrawActionConstructor {
@@ -42212,11 +42096,7 @@ Call this method if the drawing logic needs to be completed other than by double
 
     on(name: "cursor-update", eventHandler: PointDrawActionCursorUpdateEventHandler): IHandle;
 
-    on(name: "cursor-update", modifiers: string[], eventHandler: PointDrawActionCursorUpdateEventHandler): IHandle;
-
     on(name: "draw-complete", eventHandler: PointDrawActionDrawCompleteEventHandler): IHandle;
-
-    on(name: "draw-complete", modifiers: string[], eventHandler: PointDrawActionDrawCompleteEventHandler): IHandle;
   }
 
   interface PointDrawActionConstructor {
@@ -42334,19 +42214,11 @@ on the last action.
 
     on(name: "cursor-update", eventHandler: PolygonDrawActionCursorUpdateEventHandler): IHandle;
 
-    on(name: "cursor-update", modifiers: string[], eventHandler: PolygonDrawActionCursorUpdateEventHandler): IHandle;
-
     on(name: "vertex-add", eventHandler: PolygonDrawActionVertexAddEventHandler): IHandle;
-
-    on(name: "vertex-add", modifiers: string[], eventHandler: PolygonDrawActionVertexAddEventHandler): IHandle;
 
     on(name: "vertex-remove", eventHandler: PolygonDrawActionVertexRemoveEventHandler): IHandle;
 
-    on(name: "vertex-remove", modifiers: string[], eventHandler: PolygonDrawActionVertexRemoveEventHandler): IHandle;
-
     on(name: "draw-complete", eventHandler: PolygonDrawActionDrawCompleteEventHandler): IHandle;
-
-    on(name: "draw-complete", modifiers: string[], eventHandler: PolygonDrawActionDrawCompleteEventHandler): IHandle;
   }
 
   interface PolygonDrawActionConstructor {
@@ -42502,19 +42374,11 @@ on the last action.
 
     on(name: "cursor-update", eventHandler: PolylineDrawActionCursorUpdateEventHandler): IHandle;
 
-    on(name: "cursor-update", modifiers: string[], eventHandler: PolylineDrawActionCursorUpdateEventHandler): IHandle;
-
     on(name: "vertex-add", eventHandler: PolylineDrawActionVertexAddEventHandler): IHandle;
-
-    on(name: "vertex-add", modifiers: string[], eventHandler: PolylineDrawActionVertexAddEventHandler): IHandle;
 
     on(name: "vertex-remove", eventHandler: PolylineDrawActionVertexRemoveEventHandler): IHandle;
 
-    on(name: "vertex-remove", modifiers: string[], eventHandler: PolylineDrawActionVertexRemoveEventHandler): IHandle;
-
     on(name: "draw-complete", eventHandler: PolylineDrawActionDrawCompleteEventHandler): IHandle;
-
-    on(name: "draw-complete", modifiers: string[], eventHandler: PolylineDrawActionDrawCompleteEventHandler): IHandle;
   }
 
   interface PolylineDrawActionConstructor {
@@ -42616,15 +42480,9 @@ Call this method if the drawing logic needs to be completed other than by double
 
     on(name: "cursor-update", eventHandler: SegmentDrawActionCursorUpdateEventHandler): IHandle;
 
-    on(name: "cursor-update", modifiers: string[], eventHandler: SegmentDrawActionCursorUpdateEventHandler): IHandle;
-
     on(name: "draw-complete", eventHandler: SegmentDrawActionDrawCompleteEventHandler): IHandle;
 
-    on(name: "draw-complete", modifiers: string[], eventHandler: SegmentDrawActionDrawCompleteEventHandler): IHandle;
-
     on(name: "vertex-add", eventHandler: SegmentDrawActionVertexAddEventHandler): IHandle;
-
-    on(name: "vertex-add", modifiers: string[], eventHandler: SegmentDrawActionVertexAddEventHandler): IHandle;
   }
 
   interface SegmentDrawActionConstructor {
@@ -43835,8 +43693,6 @@ If `null`, the spatial filter is cleared.
 
 
     on(name: "data-received", eventHandler: StreamLayerViewDataReceivedEventHandler): IHandle;
-
-    on(name: "data-received", modifiers: string[], eventHandler: StreamLayerViewDataReceivedEventHandler): IHandle;
   }
 
   interface StreamLayerViewConstructor {
@@ -48807,7 +48663,7 @@ via the view's [map](https://developers.arcgis.com/javascript/latest/api-referen
      * 
      * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-widgets-BasemapGallery-BasemapGalleryViewModel.html#items)
      */
-    items?: CollectionProperties<BasemapGalleryItem>;
+    items?: CollectionProperties<BasemapGalleryItemProperties>;
     /**
      * The source for basemaps that the widget will display.
 This property can be autocast with an array or [Collection](https://developers.arcgis.com/javascript/latest/api-reference/esri-core-Collection.html) of [Basemap](https://developers.arcgis.com/javascript/latest/api-reference/esri-Basemap.html)s,
@@ -48829,8 +48685,7 @@ via the view's [map](https://developers.arcgis.com/javascript/latest/api-referen
     view?: MapViewProperties | SceneViewProperties;
   }
 
-
-  interface BasemapGalleryItem {
+  interface BasemapGalleryItem extends Accessor {
     /**
      * The item's associated basemap.
      * 
@@ -48859,9 +48714,39 @@ via the view's [map](https://developers.arcgis.com/javascript/latest/api-referen
      * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-widgets-BasemapGallery-support-BasemapGalleryItem.html#view)
      */
     view: MapView | SceneView;
+
+    /**
+     * Refreshes the item's state.
+     * 
+     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-widgets-BasemapGallery-support-BasemapGalleryItem.html#refresh)
+     * 
+     * 
+     */
+    refresh(): void;
   }
 
-  export const BasemapGalleryItem: BasemapGalleryItem;
+  interface BasemapGalleryItemConstructor {
+
+
+    new(properties?: BasemapGalleryItemProperties): BasemapGalleryItem;
+  }
+
+  export const BasemapGalleryItem: BasemapGalleryItemConstructor;
+
+  interface BasemapGalleryItemProperties {
+    /**
+     * The item's associated basemap.
+     * 
+     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-widgets-BasemapGallery-support-BasemapGalleryItem.html#basemap)
+     */
+    basemap?: BasemapProperties;
+    /**
+     * The view associated with this item.
+     * 
+     * [Read more...](https://developers.arcgis.com/javascript/latest/api-reference/esri-widgets-BasemapGallery-support-BasemapGalleryItem.html#view)
+     */
+    view?: MapViewProperties | SceneViewProperties;
+  }
 
   interface LocalBasemapsSource extends Accessor {
     /**
@@ -53277,8 +53162,6 @@ at the specified index in the [actions](https://developers.arcgis.com/javascript
 
 
     on(name: "trigger-action", eventHandler: PopupViewModelTriggerActionEventHandler): IHandle;
-
-    on(name: "trigger-action", modifiers: string[], eventHandler: PopupViewModelTriggerActionEventHandler): IHandle;
   }
 
   interface PopupViewModelConstructor {
@@ -54764,27 +54647,15 @@ or a 10.3 feature layer that supports pagination, i.e.`supportsPagination = true
 
     on(name: "search-clear", eventHandler: SearchViewModelSearchClearEventHandler): IHandle;
 
-    on(name: "search-clear", modifiers: string[], eventHandler: SearchViewModelSearchClearEventHandler): IHandle;
-
     on(name: "search-start", eventHandler: SearchViewModelSearchStartEventHandler): IHandle;
-
-    on(name: "search-start", modifiers: string[], eventHandler: SearchViewModelSearchStartEventHandler): IHandle;
 
     on(name: "suggest-start", eventHandler: SearchViewModelSuggestStartEventHandler): IHandle;
 
-    on(name: "suggest-start", modifiers: string[], eventHandler: SearchViewModelSuggestStartEventHandler): IHandle;
-
     on(name: "search-complete", eventHandler: SearchViewModelSearchCompleteEventHandler): IHandle;
-
-    on(name: "search-complete", modifiers: string[], eventHandler: SearchViewModelSearchCompleteEventHandler): IHandle;
 
     on(name: "select-result", eventHandler: SearchViewModelSelectResultEventHandler): IHandle;
 
-    on(name: "select-result", modifiers: string[], eventHandler: SearchViewModelSelectResultEventHandler): IHandle;
-
     on(name: "suggest-complete", eventHandler: SearchViewModelSuggestCompleteEventHandler): IHandle;
-
-    on(name: "suggest-complete", modifiers: string[], eventHandler: SearchViewModelSuggestCompleteEventHandler): IHandle;
   }
 
   interface SearchViewModelConstructor {
@@ -57357,7 +57228,7 @@ or if that is not present then it will be automatically generated.
      * @param classNames The class names.
      * 
      */
-    classes(classNames: string | string[] | any): string;
+    classes(...classNames: (string | string[] | any)[]): string;
     /**
      * Destroys the widget instance.
      * 
@@ -58128,6 +57999,11 @@ declare module "esri/layers/support/DimensionalDefinition" {
 declare module "esri/layers/support/Domain" {
   import Domain = __esri.Domain;
   export = Domain;
+}
+
+declare module "esri/layers/support/ElevationSampler" {
+  import ElevationSampler = __esri.ElevationSampler;
+  export = ElevationSampler;
 }
 
 declare module "esri/layers/support/Field" {
@@ -59070,6 +58946,11 @@ declare module "esri/widgets/BasemapGallery/BasemapGalleryViewModel" {
   export = BasemapGalleryViewModel;
 }
 
+declare module "esri/widgets/BasemapGallery/support/BasemapGalleryItem" {
+  import BasemapGalleryItem = __esri.BasemapGalleryItem;
+  export = BasemapGalleryItem;
+}
+
 declare module "esri/widgets/BasemapGallery/support/LocalBasemapsSource" {
   import LocalBasemapsSource = __esri.LocalBasemapsSource;
   export = LocalBasemapsSource;
@@ -59370,11 +59251,6 @@ declare module "esri/geometry/support/webMercatorUtils" {
   export = webMercatorUtils;
 }
 
-declare module "esri/layers/support/ElevationSampler" {
-  import ElevationSampler = __esri.ElevationSampler;
-  export = ElevationSampler;
-}
-
 declare module "esri/renderers/smartMapping/creators/color" {
   import color = __esri.color;
   export = color;
@@ -59468,11 +59344,6 @@ declare module "esri/views/3d/externalRenderers" {
 declare module "esri/widgets/support/widget" {
   import widget = __esri.widget;
   export = widget;
-}
-
-declare module "esri/widgets/BasemapGallery/support/BasemapGalleryItem" {
-  import BasemapGalleryItem = __esri.BasemapGalleryItem;
-  export = BasemapGalleryItem;
 }
 
 declare module "esri/widgets/CoordinateConversion/support/Format" {
