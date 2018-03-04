@@ -101,8 +101,6 @@ function createMap() {
     url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer"
   });
 
-  hillShadeLayer;
-
   const baseImageLayer = new TileLayer({
     url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
   });
@@ -115,7 +113,7 @@ function createMap() {
     basemap: {
       baseLayers: [
         new BlendLayer({
-          multiplyLayers: [ baseImageLayer ] //, hillShadeLayer ]
+          multiplyLayers: [ baseImageLayer, hillShadeLayer ]
         })
       ]
     },
