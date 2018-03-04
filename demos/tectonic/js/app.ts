@@ -90,11 +90,6 @@ function createView(params: { map: Map; viewport: Viewport }) {
       heading: 137.25,
       tilt: 62.75
     },
-    environment: {
-      atmosphere: { 
-        quality: "high"
-      }
-    },
     clippingArea: params.viewport.clippingArea
   });
 }
