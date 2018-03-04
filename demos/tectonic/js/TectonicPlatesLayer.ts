@@ -12,6 +12,7 @@ import { Polyline, Extent, Mesh, Point, SpatialReference } from "esri/geometry";
 import Collection = require("esri/core/Collection");
 import geometryEngine = require("esri/geometry/geometryEngine");
 import QueryTask = require("esri/tasks/QueryTask");
+import ImageMeshColor = require("esri/geometry/support/ImageMeshColor");
 import { vec3, vec2 } from "gl-matrix";
 
 const PolylineCollection = Collection.ofType(Polyline);
@@ -37,6 +38,18 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
   height: number = 50;
 
   private measurements: Measurement[] = null;
+
+  private texturePlate1 = new ImageMeshColor({
+    url: "./img/TexturesCom_SoilRough0039_1_seamless_S.jpg"
+  });
+
+  private texturePlate2 = new ImageMeshColor({
+    url: "./img/TexturesCom_SoilMud0004_1_seamless_S.jpg"
+  });
+
+  private textureEarth = new ImageMeshColor({
+    url: "./img/TexturesCom_SandPebbles0060_1_seamless_S.jpg"
+  });
 
   constructor(obj?: ConstructProperties) {
     super();
@@ -161,8 +174,8 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
     const z = 0;
 
     const { ymin, ymax } = this.clippingArea;
-    const l = vec2.length(velYZ) * 50;
-    const h = 500;
+    const l = vec2.length(velYZ) * 100;
+    const h = 1000;
 
     // y = a * x + b
     const pto = [my + norm[0] * h, z + -norm[1] * h];
@@ -211,9 +224,21 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
       position[i + 1] = Math.min(Math.max(ymin, position[i + 1]), ymax);
     }
 
+    const uv = [];
+    const zmax = 8000;
+    const zmin = z - zd;
+
+    for (let i = 0; i < position.length; i += 3) {
+      const u = (position[i + 1] - ymin) / (ymax - ymin);
+      const v = (position[i + 2] - zmin) / (zmax - zmin);
+
+      uv.push(u, v);
+    }
+
     const band = new Mesh({
       vertexAttributes: {
-        position
+        position,
+        uv
       },
 
       components: [
@@ -227,7 +252,7 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
           ],
 
           material: {
-            color: "green" as any
+            color: this.texturePlate1
           }
         },
         {
@@ -237,7 +262,7 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
           ],
 
           material: {
-            color: "red" as any
+            color: this.texturePlate2
           }
         }
       ],
@@ -265,7 +290,8 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
 
     const earth = new Mesh({
       vertexAttributes: {
-        position
+        position,
+        uv
       },
 
       components: [
@@ -273,7 +299,7 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
           faces: earthFaces,
 
           material: {
-            color: "yellow" as any
+            color: this.textureEarth
           }
         }
       ],
@@ -307,30 +333,7 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
         continue;
       }
 
-      if (i === 0) {
-        console.log(this.calculateVelocityVector(measurement.velocity));
-      }
-
       // Generate mesh out of slice to represent the tectonic movement
-      const graphic = new Graphic({
-        geometry: measurement.location,
-        symbol: {
-          type: "point-3d",
-          symbolLayers: [{
-            type: "object",
-            resource: {
-              primitive: "sphere"
-            },
-            material: {
-              color: "blue"
-            },
-            width: 1000
-          }]
-        }
-      });
-
-      this.graphics.add(graphic);
-
       const gg = this.createMeshSlice(measurement);
 
       const g2 = new Graphic({
@@ -346,29 +349,6 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
       });
 
       this.graphics.add(g3);
-    }
-
-    for (const measurement of this.measurements) {
-      if (this.clippingArea.intersects(measurement.location)) {
-        const graphic = new Graphic({
-          geometry: measurement.location,
-          symbol: {
-            type: "point-3d",
-            symbolLayers: [{
-              type: "object",
-              resource: {
-                primitive: "sphere"
-              },
-              material: {
-                color: "red"
-              },
-              width: 1000
-            }]
-          }
-        });
-
-        this.graphics.add(graphic);
-      }
     }
   }
 
