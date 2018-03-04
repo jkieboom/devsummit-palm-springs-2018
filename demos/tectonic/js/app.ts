@@ -12,6 +12,7 @@ import FillSymbol3DLayer = require("esri/symbols/FillSymbol3DLayer");
 import MeshSymbol3D = require("esri/symbols/MeshSymbol3D");
 import SolidEdges3D = require("esri/symbols/edges/SolidEdges3D");
 import SketchyEdges3D = require("esri/symbols/edges/SketchyEdges3D");
+import QueryTask = require("esri/tasks/QueryTask");
 
 import { BlendLayer } from "./BlendLayer";
 import { ExaggerationElevationLayer } from "./ExaggerationElevationLayer";
@@ -111,14 +112,13 @@ export async function run() {
 const boundariesServiceUrl = "https://services2.arcgis.com/cFEFS0EWrhfDeVw9/ArcGIS/rest/services/PB2002_boundaries/FeatureServer/0";
 
 async function getTectonicPaths() {
-  const layer = new FeatureLayer({
+  const query = new QueryTask({
     url: boundariesServiceUrl
   });
 
-  const featureSet = await layer.queryFeatures({
+  const featureSet = await query.execute({
     where: "Name = 'EU-IN'",
-    returnGeometry: true,
-    outSpatialReference: SpatialReference.WebMercator
+    returnGeometry: true
   });
 
   return featureSet.features.map(feature => feature.geometry as Polyline);
