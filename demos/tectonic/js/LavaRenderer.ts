@@ -30,6 +30,9 @@ export class LavaRenderer extends declared(Accessor) {
   readonly view: esri.SceneView;
 
   @property({ constructOnly: true })
+  readonly top: number = 0;
+
+  @property({ constructOnly: true })
   readonly bottom: number = 0;
 
   @property({ value: true })
@@ -81,6 +84,7 @@ export class LavaRenderer extends declared(Accessor) {
     gl.uniformMatrix4fv(uniformLocations.uViewMatrix, false, viewMatrix);
     gl.uniformMatrix4fv(uniformLocations.uProjectionMatrix, false, camera.projectionMatrix);
     gl.uniform1f(uniformLocations.uTime, this.time);
+    gl.uniform1f(uniformLocations.uTop, this.top);
     gl.uniform2f(uniformLocations.uResolution, 800, 800);
 
     if (this.playing) {
@@ -129,11 +133,12 @@ export class LavaRenderer extends declared(Accessor) {
         uniform mat4 uProjectionMatrix;
         uniform vec2 uResolution;
 
+        uniform float uTop;
         varying vec2 vUV;
 
         void main() {
           vUV = aUV * uResolution - vec2(0, 100);
-          gl_Position = uProjectionMatrix * uViewMatrix * vec4(aVertexPosition, 1);
+          gl_Position = uProjectionMatrix * uViewMatrix * vec4(aVertexPosition.x, aVertexPosition.y, aVertexPosition.z + uTop, 1);
         }
       `,
 
@@ -275,7 +280,7 @@ export class LavaRenderer extends declared(Accessor) {
       `,
 
       // Uniform names
-      ["uViewMatrix", "uProjectionMatrix", "uTime", "uResolution"]
+      ["uViewMatrix", "uProjectionMatrix", "uTime", "uResolution", "uTop"]
     );
 
     this.vertexPositionAttributeLocation = gl.getAttribLocation(this.program.program, "aVertexPosition");
@@ -313,12 +318,23 @@ export class LavaRenderer extends declared(Accessor) {
     const nVerticesPerSegment = 6;
     const nSegments = nSamples - 1;
     const sideStride = nSegments * (nVerticesPerSegment * 3 + nVerticesPerSegment * 2);
-    const buffer = new Float64Array(sideStride * nSides);
+
+    let buffer: Float64Array = null;
+    if (this.top) {
+      buffer = new Float64Array(sideStride * nSides + 30);
+    }
+    else {
+      buffer = new Float64Array(sideStride * nSides);
+    }
 
     this.sampleAlong(c.xmin, c.xmax, c.ymin, c.ymin, c.spatialReference, nSamples, buffer, 0 * sideStride);
     this.sampleAlong(c.xmax, c.xmax, c.ymin, c.ymax, c.spatialReference, nSamples, buffer, 1 * sideStride);
     this.sampleAlong(c.xmax, c.xmin, c.ymax, c.ymax, c.spatialReference, nSamples, buffer, 2 * sideStride);
     this.sampleAlong(c.xmin, c.xmin, c.ymax, c.ymin, c.spatialReference, nSamples, buffer, 3 * sideStride);
+
+    if (this.top) {
+      this.fillBetween(c.xmin, c.xmax, c.ymin, c.ymax, c.spatialReference, buffer, sideStride * nSides);
+    }
 
     this.flipUV(buffer, sideStride, 1);
     this.flipUV(buffer, sideStride, 3);
@@ -362,6 +378,73 @@ export class LavaRenderer extends declared(Accessor) {
     }
   }
 
+  private fillBetween(xmin: number, xmax: number, ymin: number, ymax: number, spatialReference: esri.SpatialReference, buffer: Float64Array, offset: number) {
+    const point0 = new Point({ x: 0, y: 0, spatialReference });
+    const point1 = new Point({ x: 0, y: 0, spatialReference });
+    const point2 = new Point({ x: 0, y: 0, spatialReference });
+    const point3 = new Point({ x: 0, y: 0, spatialReference });
+
+    point0.x = xmin;
+    point0.y = ymin;
+    point0.z = 0;
+
+    point1.x = xmax;
+    point1.y = ymin;
+    point1.z = 0;
+
+    point2.x = xmax;
+    point2.y = ymax;
+    point2.z = 0;
+
+    point3.x = xmin;
+    point3.y = ymax;
+    point3.z = 0;
+
+    buffer[offset++] = point0.x;
+    buffer[offset++] = point0.y;
+    buffer[offset++] = point0.z;
+
+    buffer[offset++] = 0.0;
+    buffer[offset++] = 0.0;
+
+    buffer[offset++] = point1.x;
+    buffer[offset++] = point1.y;
+    buffer[offset++] = point1.z;
+
+    buffer[offset++] = 0.5;
+    buffer[offset++] = 0.0;
+
+    buffer[offset++] = point2.x;
+    buffer[offset++] = point2.y;
+    buffer[offset++] = point2.z;
+
+    buffer[offset++] = 0.5;
+    buffer[offset++] = 0.5;
+
+    // 2
+    buffer[offset++] = point2.x;
+    buffer[offset++] = point2.y;
+    buffer[offset++] = point2.z;
+
+    buffer[offset++] = 0.5;
+    buffer[offset++] = 0.5;
+
+    buffer[offset++] = point3.x;
+    buffer[offset++] = point3.y;
+    buffer[offset++] = point3.z;
+
+    buffer[offset++] = 0.0;
+    buffer[offset++] = 0.5;
+
+    buffer[offset++] = point0.x;
+    buffer[offset++] = point0.y;
+    buffer[offset++] = point0.z;
+
+    buffer[offset++] = 0.0;
+    buffer[offset++] = 0.0;
+
+  }
+
   private sampleAlong(xmin: number, xmax: number, ymin: number, ymax: number, spatialReference: esri.SpatialReference, nSamples: number, buffer: Float64Array, offset: number) {
     const sampler = this.view.groundView.elevationSampler;
     const nSegments = nSamples - 1;
@@ -380,11 +463,11 @@ export class LavaRenderer extends declared(Accessor) {
 
       point0.x = xmin + dx * pos0;
       point0.y = ymin + dy * pos0;
-      point0.z = sampler.elevationAt(point0) || 0;
+      point0.z = this.top ? 0 : sampler.elevationAt(point0) || 0;
 
       point1.x = xmin + dx * pos1;
       point1.y = ymin + dy * pos1;
-      point1.z = sampler.elevationAt(point1) || 0;
+      point1.z = this.top ? 0 : sampler.elevationAt(point1) || 0;
 
       const zRel0 = 1.0 - (point0.z - this.bottom) / maxZ;
       const zRel1 = 1.0 - (point1.z - this.bottom) / maxZ;
@@ -438,6 +521,7 @@ const tmpOrigin = [0, 0, 0];
 
 interface ConstructProperties {
   view: esri.SceneView;
+  top: number;
   bottom: number;
 }
 

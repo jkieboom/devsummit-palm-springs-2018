@@ -40,15 +40,13 @@ export async function run() {
   const titleElement = document.getElementById("title");
   new IntegratedTitle({ view, viewport, element: titleElement, elevation: 10000 });
 
-  if (0) {
-    lavaRenderer = new LavaRenderer({ view, bottom: -4000 });
+  lavaRenderer = new LavaRenderer({ view, top: -4000, bottom: -8000 });
 
-    view.on("key-down", ev => {
-      if (ev.key === " ") {
-        lavaRenderer.playing = !lavaRenderer.playing;
-      }
-    });
-  }
+  view.on("key-down", ev => {
+    if (ev.key === " ") {
+      lavaRenderer.playing = !lavaRenderer.playing;
+    }
+  });
 
   let pathLayer: PathLayer;
   let platesLayer: TectonicPlatesLayer;
