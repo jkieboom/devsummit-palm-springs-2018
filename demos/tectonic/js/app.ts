@@ -18,9 +18,9 @@ import { BlendLayer } from "./BlendLayer";
 import { ExaggerationElevationLayer } from "./ExaggerationElevationLayer";
 import { Viewport } from "./Viewport";
 import { ScrollAlong } from "./ScrollAlong";
-import { IntegratedTitle } from "./IntegratedTitle";
+import { DOMElement3D } from "./DOMElement3D";
 import { LavaRenderer } from "./LavaRenderer";
-import { PathLayer } from "./PathLayer";
+import { PlateBoundaryLayer } from "./PlateBoundaryLayer";
 import { TectonicPlatesLayer } from "./TectonicPlatesLayer";
 
 let scrollAlong: ScrollAlong;
@@ -38,7 +38,7 @@ export async function run() {
   scrollAlong = new ScrollAlong({ view, viewport, path: tectonicPaths[1] });
 
   const titleElement = document.getElementById("title");
-  new IntegratedTitle({ view, viewport, element: titleElement, elevation: 10000 });
+  new DOMElement3D({ view, viewport, element: titleElement, elevation: 10000 });
 
   lavaRenderer = new LavaRenderer({ view, top: -4000, bottom: -8000 });
 
@@ -48,7 +48,7 @@ export async function run() {
     }
   });
 
-  let pathLayer: PathLayer;
+  let pathLayer: PlateBoundaryLayer;
   let platesLayer: TectonicPlatesLayer;
 
   view.watch("clippingArea", clippingArea => {
@@ -65,7 +65,7 @@ export async function run() {
 
   watchUtils.whenOnce(view, "groundView.elevationSampler")
       .then(() => {
-        pathLayer = new PathLayer({
+        pathLayer = new PlateBoundaryLayer({
           clippingArea: view.clippingArea,
           symbol: new MeshSymbol3D({
             symbolLayers: [

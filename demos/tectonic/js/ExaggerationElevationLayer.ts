@@ -5,21 +5,55 @@
 
 import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
+// esri.core
 import promiseUtils = require("esri/core/promiseUtils");
+
+// esri.layers
 import BaseElevationLayer = require("esri/layers/BaseElevationLayer");
 import ElevationLayer = require("esri/layers/ElevationLayer");
 
+/**
+ * An elevation layer that exaggerates a source elevation layer
+ * by multiplying elevation values by a constant.
+ */
 @subclass()
 export class ExaggerationElevationLayer extends declared(BaseElevationLayer) {
-  @property({ constructOnly: true })
-  readonly elevationLayer: ElevationLayer;
 
-  @property({ constructOnly: true })
-  readonly exaggerationFactor: number | ((level: number) => number);
+  //--------------------------------------------------------------------------
+  //
+  //  Lifecycle
+  //
+  //--------------------------------------------------------------------------
 
   constructor(obj?: ConstructProperties) {
     super();
   }
+
+  //--------------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //--------------------------------------------------------------------------
+
+  //----------------------------------
+  //  elevationLayer
+  //----------------------------------
+
+  @property({ constructOnly: true })
+  readonly elevationLayer: ElevationLayer;
+
+  //----------------------------------
+  //  exaggerationFactornts
+  //----------------------------------
+
+  @property({ constructOnly: true })
+  readonly exaggerationFactor: number;
+
+  //--------------------------------------------------------------------------
+  //
+  //  Public methods
+  //
+  //--------------------------------------------------------------------------
 
   load(): IPromise<any> {
     this._set("elevationLayer", new ElevationLayer({
@@ -31,21 +65,38 @@ export class ExaggerationElevationLayer extends declared(BaseElevationLayer) {
     return;
   }
 
+  /**
+   * Fetches a single tile. This method is simply a wrapper around
+   * the actual implementation that uses async/await.
+   *
+   * @param level the tile level.
+   * @param row the tile row.
+   * @param col the tile column.
+   */
   fetchTile(level: number, row: number, col: number) {
     return this._fetchTile(level, row, col) as any;
   }
 
+  //--------------------------------------------------------------------------
+  //
+  //  Private methods
+  //
+  //--------------------------------------------------------------------------
+
+  /**
+   * Fetches the tile at the specified level/row/col. The tile will
+   * be composed of the tile from the underlying elevation layer,
+   * with values exaggerated with the exaggeration factor.
+   *
+   * @param level the tile level.
+   * @param row the tile row.
+   * @param col the tile column.
+   */
   private async _fetchTile(level: number, row: number, col: number) {
     const data = await this.elevationLayer.fetchTile(level, row, col);
 
-    const multiplier = (
-        typeof this.exaggerationFactor === "function"
-      ? this.exaggerationFactor(level)
-      : this.exaggerationFactor || 1
-    );
-
     for (var i = 0; i < data.values.length; i++) {
-      data.values[i] *= multiplier;
+      data.values[i] *= this.exaggerationFactor;
     }
 
     return data;
@@ -54,7 +105,7 @@ export class ExaggerationElevationLayer extends declared(BaseElevationLayer) {
 
 interface ConstructProperties {
   elevationLayer: ElevationLayer;
-  exaggerationFactor?: number | ((level: number) => number);
+  exaggerationFactor?: number;
 }
 
 export default ExaggerationElevationLayer;

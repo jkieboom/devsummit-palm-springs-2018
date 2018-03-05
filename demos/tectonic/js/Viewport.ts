@@ -2,14 +2,37 @@
 /// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
 
 import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
-import Accessor = require("esri/core/Accessor");
 
+// esri
 import { Point, Extent, SpatialReference } from "esri/geometry";
 
+// esri.core
+import Accessor = require("esri/core/Accessor");
+
+/**
+ * Represents the viewport of the slice of surface that we want to view.
+ * The viewport computes a clipping area based on the center of the
+ * viewport and a fixed size.
+ */
 @subclass()
 export class Viewport extends declared(Accessor) {
+
+  //--------------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //--------------------------------------------------------------------------
+
+  //----------------------------------
+  //  size
+  //----------------------------------
+
   @property()
   size = 20000;
+
+  //----------------------------------
+  //  center
+  //----------------------------------
 
   @property()
   center: Point = new Point({
@@ -17,6 +40,10 @@ export class Viewport extends declared(Accessor) {
     y: 4052445.62428827,
     spatialReference: SpatialReference.WebMercator
   })
+
+  //----------------------------------
+  //  clippingArea
+  //----------------------------------
 
   @property({ dependsOn: ["size", "center"], readOnly: true })
   get clippingArea(): Extent {
@@ -33,8 +60,21 @@ export class Viewport extends declared(Accessor) {
     });
   }
 
-  offset(x: number, y: number) {
-    this.center = new Point({ x: this.center.x + x, y: this.center.y + y, spatialReference: this.center.spatialReference });
+  //--------------------------------------------------------------------------
+  //
+  //  Public Methods
+  //
+  //--------------------------------------------------------------------------
+
+  /**
+   * Applies an offset to the center of the viewport.
+   *
+   * @param x the x offset.
+   * @param y the y offset.
+   */
+  offset(dx: number, dy: number) {
+    const { x, y, spatialReference } = this.center;
+    this.center = new Point({ x: x + dx, y: y + dy, spatialReference });
   }
 }
 

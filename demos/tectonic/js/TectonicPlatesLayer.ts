@@ -3,16 +3,30 @@
 
 import esri = __esri;
 
+// esri
+import Collection = require("esri/core/Collection");
+import Graphic = require("esri/Graphic");
+import { Polyline, Extent, Mesh, Point, SpatialReference } from "esri/geometry";
+
+// esri.core
 import Accessor = require("esri/core/Accessor");
+
+// esri.core.accessorSupport
 import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
-import Graphic = require("esri/Graphic");
-import GraphicsLayer = require("esri/layers/GraphicsLayer");
-import { Polyline, Extent, Mesh, Point, SpatialReference } from "esri/geometry";
-import Collection = require("esri/core/Collection");
+// esri.geometry
 import geometryEngine = require("esri/geometry/geometryEngine");
-import QueryTask = require("esri/tasks/QueryTask");
+
+// esri.geometry.support
 import ImageMeshColor = require("esri/geometry/support/ImageMeshColor");
+
+// esri.layers
+import GraphicsLayer = require("esri/layers/GraphicsLayer");
+
+// esri.tasks
+import QueryTask = require("esri/tasks/QueryTask");
+
+// app
 import { vec3, vec2 } from "gl-matrix";
 
 const PolylineCollection = Collection.ofType(Polyline);

@@ -3,39 +3,36 @@
 
 import esri = __esri;
 
+// esri
+import Graphic = require("esri/Graphic");
+import { Polyline, Extent, Mesh } from "esri/geometry";
+
+// esri.core
 import Accessor = require("esri/core/Accessor");
+import Collection = require("esri/core/Collection");
+
+// esri.core.accessorSupport
 import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
-import Graphic = require("esri/Graphic");
-import GraphicsLayer = require("esri/layers/GraphicsLayer");
-import { Polyline, Extent, Mesh } from "esri/geometry";
-import Collection = require("esri/core/Collection");
+// esri.geometry
 import geometryEngine = require("esri/geometry/geometryEngine");
+
+// esri.layers
+import GraphicsLayer = require("esri/layers/GraphicsLayer");
 
 const PolylineCollection = Collection.ofType(Polyline);
 
+/**
+ *
+ */
 @subclass()
-export class PathLayer extends declared(GraphicsLayer) {
-  @property()
-  set clippingArea(value: Extent) {
-    this._set("clippingArea", value);
-    this.update();
-  }
+export class PlateBoundaryLayer extends declared(GraphicsLayer) {
 
-  @property({ constructOnly: true, type: PolylineCollection })
-  readonly lines: Collection<Polyline> = new PolylineCollection();
-
-  @property({ constructOnly: true })
-  readonly elevationSampler: esri.ElevationSampler;
-
-  @property()
-  set symbol(value: esri.MeshSymbol3D) {
-    this._set("symbol", value);
-    this.update();
-  }
-
-  @property()
-  height: number = 50;
+  //--------------------------------------------------------------------------
+  //
+  //  Lifecycle
+  //
+  //--------------------------------------------------------------------------
 
   constructor(obj?: ConstructProperties) {
     super();
@@ -50,8 +47,70 @@ export class PathLayer extends declared(GraphicsLayer) {
     this.update();
   }
 
+  //--------------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //--------------------------------------------------------------------------
+
+  //----------------------------------
+  //  clippingArea
+  //----------------------------------
+
+  @property()
+  set clippingArea(value: Extent) {
+    this._set("clippingArea", value);
+    this.update();
+  }
+
+  //----------------------------------
+  // lines
+  //----------------------------------
+
+  @property({ constructOnly: true, type: PolylineCollection })
+  readonly lines: Collection<Polyline> = new PolylineCollection();
+
+  //----------------------------------
+  //  elevationSampler
+  //----------------------------------
+
+  @property({ constructOnly: true })
+  readonly elevationSampler: esri.ElevationSampler;
+
+  //----------------------------------
+  //  symbol
+  //----------------------------------
+
+  @property()
+  set symbol(value: esri.MeshSymbol3D) {
+    this._set("symbol", value);
+    this.update();
+  }
+
+  //----------------------------------
+  //  height
+  //----------------------------------
+
+  @property()
+  height: number = 50;
+
+  //--------------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //--------------------------------------------------------------------------
+
   private updateId: number = 0;
 
+  //--------------------------------------------------------------------------
+  //
+  //  Private Methods
+  //
+  //--------------------------------------------------------------------------
+
+  /**
+   * Schedules an update in the next frame.
+   */
   private scheduleUpdate() {
     if (!this.updateId) {
       this.updateId = setTimeout(() => {
@@ -61,22 +120,31 @@ export class PathLayer extends declared(GraphicsLayer) {
     }
   }
 
+  /**
+   * Updates the geometry when elevation or the clipping area has
+   * changed.
+   */
   private update() {
-    // Remove all graphics and recreate them.
     this.graphics.removeAll();
 
-    this.lines.forEach(line => {
+    // Create a path geometry for plate boundary
+    const graphics = this.lines.map(line => {
       const geometry = this.createPathGeometry(line);
 
-      const graphic = new Graphic({
+      return new Graphic({
         geometry,
         symbol: this.symbol
       });
-
-      this.graphics.add(graphic);
     });
+
+    this.graphics.addMany(graphics);
   }
 
+  /**
+   * Clips a line against the clipping area.
+   *
+   * @param line the line to clip.
+   */
   private clipLine(line: Polyline): Polyline {
     if (this.clippingArea) {
       const expandedClippingArea = this.clippingArea.clone().expand(1.1);
@@ -87,6 +155,12 @@ export class PathLayer extends declared(GraphicsLayer) {
     }
   }
 
+  /**
+   * Densifies a line such that there are approximately
+   * 50 segments covering the clipping area size.
+   *
+   * @param line the line to densify.
+   */
   private densifyLine(line: Polyline): Polyline {
     if (this.clippingArea) {
       const dim = Math.max(this.clippingArea.width, this.clippingArea.height);
@@ -97,7 +171,19 @@ export class PathLayer extends declared(GraphicsLayer) {
     }
   }
 
+  /**
+   * Create the extruded vertex position attribute for
+   * a given line. The line is expected to have z-values
+   * that coincide with the ground surface. The line is
+   * extruded upwards by [height](#height).
+   *
+   * @param line the line.
+   */
   private createExtrudedPositionAttribute(line: Polyline) {
+    // NOTE: we only take the first path. Multi-path lines
+    // are currently not supported (but the below can be
+    // easily adapted if so needed).
+
     const path = line.paths[0];
     const position = new Float64Array(path.length * 2 * 3);
     let positionPtr = 0;
@@ -115,6 +201,13 @@ export class PathLayer extends declared(GraphicsLayer) {
     return position;
   }
 
+  /**
+   * Create an extruded mesh geometry along the line. This method
+   * assumes the line has z-values that coincide with the ground
+   * surface.
+   *
+   * @param line the line.
+   */
   private createExtrudedMesh(line: Polyline) {
     const position = this.createExtrudedPositionAttribute(line);
 
@@ -125,6 +218,8 @@ export class PathLayer extends declared(GraphicsLayer) {
     let facePtr = 0;
     let vertexPtr = 0;
 
+    // Create two triangle faces between each consecutive
+    // pair of vertices in the line.
     for (let i = 0; i < nSegments; i++) {
       faces[facePtr++] = vertexPtr;
       faces[facePtr++] = vertexPtr + 3;
@@ -150,6 +245,14 @@ export class PathLayer extends declared(GraphicsLayer) {
     });
   }
 
+  /**
+   * Creates a mesh geometry that follows the line representing
+   * a plate boundary. The line is clipped to the clipping area,
+   * densified, enriched with z-values from the ground surface
+   * and then tesselated to create the mesh.
+   *
+   * @param line the line.
+   */
   private createPathGeometry(line: Polyline) {
     // Clip against clipping area using geometry engine
     const clipped = this.clipLine(line);
@@ -174,4 +277,4 @@ interface ConstructProperties {
   height?: number;
 }
 
-export default PathLayer;
+export default PlateBoundaryLayer;

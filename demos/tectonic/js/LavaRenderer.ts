@@ -5,44 +5,42 @@ import esri = __esri;
 
 import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
+// esri
 import { Point } from "esri/geometry";
+
+// esri.core
 import watchUtils = require("esri/core/watchUtils");
 import Accessor = require("esri/core/Accessor");
+
+// esri.views.3d
 import externalRenderers = require("esri/views/3d/externalRenderers");
 
+// app
 import { ProgramDefinition, createProgram } from "./webglUtils";
 
 import { mat4, vec3 } from "gl-matrix";
 
+/**
+ * External renderer to render a segment of "earth" below
+ * the clipped view area. The segment is made "interesting"
+ * by applying an animation in the shader to emulate soil
+ * and lava flow. Note that the visualization is purely
+ * for schematic reasons and does not represent real data.
+ *
+ * The original shader was taken from shadertoy:
+ *   Shader adapted from https://www.shadertoy.com/view/Xtf3WB.
+ *   Full credit goes to https://www.shadertoy.com/user/nexor.
+ *   https://www.shadertoy.com/terms
+ *   CC BY-NC-SA 3.0
+ */
 @subclass()
 export class LavaRenderer extends declared(Accessor) {
-  private vbo: WebGLBuffer;
-  private program: ProgramDefinition;
-  private needsUpdate: boolean = false;
-  private origin = [0, 0, 0];
-  private numVertices = 0;
-  private viewMatrix = mat4.create();
-  private vertexPositionAttributeLocation: number;
-  private uvAttributeLocation: number;
-  private time = 0;
 
-  @property({ constructOnly: true })
-  readonly view: esri.SceneView;
-
-  @property({ constructOnly: true })
-  readonly top: number = 0;
-
-  @property({ constructOnly: true })
-  readonly bottom: number = 0;
-
-  @property({ value: true })
-  set playing(value: boolean) {
-    this._set("playing", value);
-
-    if (value) {
-      externalRenderers.requestRender(this.view);
-    }
-  }
+  //--------------------------------------------------------------------------
+  //
+  //  Lifecycle
+  //
+  //--------------------------------------------------------------------------
 
   constructor(obj: ConstructProperties) {
     super();
@@ -56,6 +54,64 @@ export class LavaRenderer extends declared(Accessor) {
       externalRenderers.add(this.view, this as any);
     });
   }
+
+  //--------------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //--------------------------------------------------------------------------
+
+  //----------------------------------
+  //  view
+  //----------------------------------
+
+  @property({ constructOnly: true })
+  readonly view: esri.SceneView;
+
+  //----------------------------------
+  //  bottom
+  //----------------------------------
+
+  @property({ constructOnly: true })
+  readonly top: number = 0;
+
+  @property({ constructOnly: true })
+  readonly bottom: number = 0;
+
+  //----------------------------------
+  //  playing
+  //----------------------------------
+
+  @property({ value: true })
+  set playing(value: boolean) {
+    this._set("playing", value);
+
+    if (value) {
+      externalRenderers.requestRender(this.view);
+    }
+  }
+
+  //--------------------------------------------------------------------------
+  //
+  //  Variables
+  //
+  //--------------------------------------------------------------------------
+
+  private vbo: WebGLBuffer;
+  private program: ProgramDefinition;
+  private needsUpdate: boolean = false;
+  private origin = [0, 0, 0];
+  private numVertices = 0;
+  private viewMatrix = mat4.create();
+  private vertexPositionAttributeLocation: number;
+  private uvAttributeLocation: number;
+  private time = 0;
+
+  //--------------------------------------------------------------------------
+  //
+  //  Public Methods
+  //
+  //--------------------------------------------------------------------------
 
   setup(context: esri.RenderContext) {
     this.initializeVertexBufferObject(context);
@@ -71,11 +127,10 @@ export class LavaRenderer extends declared(Accessor) {
 
     const camera = context.camera;
 
+    // Setup state
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
     gl.depthMask(true);
-    gl.disable(gl.CULL_FACE);
-    gl.disable(gl.STENCIL_TEST);
 
     // Setup program and uniforms
     gl.useProgram(program);
@@ -102,15 +157,23 @@ export class LavaRenderer extends declared(Accessor) {
     gl.enableVertexAttribArray(this.uvAttributeLocation);
     gl.vertexAttribPointer(this.uvAttributeLocation, 2, gl.FLOAT, false, 20, 12);
 
+    // Draw triangles
     gl.drawArrays(gl.TRIANGLES, 0, this.numVertices);
 
     // Make sure to reset the WebGL state when finishing the render
     context.resetWebGLState();
 
     if (this.playing) {
+      // If we are playing continuously, request a new render
       externalRenderers.requestRender(this.view);
     }
   }
+
+  //--------------------------------------------------------------------------
+  //
+  //  Private Methods
+  //
+  //--------------------------------------------------------------------------
 
   private initializeVertexBufferObject(context: esri.RenderContext) {
     const gl = context.gl;
@@ -287,6 +350,11 @@ export class LavaRenderer extends declared(Accessor) {
     this.uvAttributeLocation = gl.getAttribLocation(this.program.program, "aUV");
   }
 
+  /**
+   * Update vertex attributes when the clipping area or the ground elevation has changed.
+   *
+   * @param context the render context
+   */
   private update(context: esri.RenderContext) {
     if (!this.needsUpdate) {
       return;
@@ -300,15 +368,24 @@ export class LavaRenderer extends declared(Accessor) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
     gl.bufferData(gl.ARRAY_BUFFER, bufferData.buffer, gl.STATIC_DRAW);
 
+    // Store the origin
     vec3.copy(this.origin as any, bufferData.origin);
     this.numVertices = bufferData.buffer.length / 5;
   }
 
+  /**
+   * Request a geometry update. This will flag the need for an update
+   * and request a new frame. The update will happen just before the
+   * next frame is rendered.
+   */
   private requestUpdate() {
     this.needsUpdate = true;
     externalRenderers.requestRender(this.view);
   }
 
+  /**
+   * Create the vertex attributes required to render the earth segment.
+   */
   private createBufferData() {
     // Sample the ground view around the clipping area at reasonably high resolution.
     // Pull down to create the box.
@@ -319,13 +396,11 @@ export class LavaRenderer extends declared(Accessor) {
     const nSegments = nSamples - 1;
     const sideStride = nSegments * (nVerticesPerSegment * 3 + nVerticesPerSegment * 2);
 
-    let buffer: Float64Array = null;
-    if (this.top) {
-      buffer = new Float64Array(sideStride * nSides + 30);
-    }
-    else {
-      buffer = new Float64Array(sideStride * nSides);
-    }
+    const buffer = (
+        this.top
+      ? new Float64Array(sideStride * nSides + 30)
+      : new Float64Array(sideStride * nSides)
+    );
 
     this.sampleAlong(c.xmin, c.xmax, c.ymin, c.ymin, c.spatialReference, nSamples, buffer, 0 * sideStride);
     this.sampleAlong(c.xmax, c.xmax, c.ymin, c.ymax, c.spatialReference, nSamples, buffer, 1 * sideStride);
@@ -336,9 +411,11 @@ export class LavaRenderer extends declared(Accessor) {
       this.fillBetween(c.xmin, c.xmax, c.ymin, c.ymax, c.spatialReference, buffer, sideStride * nSides);
     }
 
+    // Flip UV of odd segments so it looks continuous
     this.flipUV(buffer, sideStride, 1);
     this.flipUV(buffer, sideStride, 3);
 
+    // Calculate a local origin to improve render precision
     const origin = vec3.set(tmpOrigin as any, c.center.x, c.center.y, 0);
     const bufferInOrigin = new Float32Array(buffer.length);
     this.subtractOrigin(bufferInOrigin, buffer, origin);
@@ -372,7 +449,7 @@ export class LavaRenderer extends declared(Accessor) {
       out[i + 1] = buffer[i + 1] - origin[1];
       out[i + 2] = buffer[i + 2] - origin[2];
 
-      // UV
+      // Copy over UV
       out[i + 3] = buffer[i + 3];
       out[i + 4] = buffer[i + 4];
     }
@@ -445,6 +522,20 @@ export class LavaRenderer extends declared(Accessor) {
 
   }
 
+  /**
+   * Populate the buffer with the specified number of vertices by
+   * sampling elevation data from the ground view along the line
+   * specified by xmin, xmax, ymin and ymax.
+   *
+   * @param xmin
+   * @param xmax
+   * @param ymin
+   * @param ymax
+   * @param spatialReference
+   * @param nSamples
+   * @param buffer
+   * @param offset
+   */
   private sampleAlong(xmin: number, xmax: number, ymin: number, ymax: number, spatialReference: esri.SpatialReference, nSamples: number, buffer: Float64Array, offset: number) {
     const sampler = this.view.groundView.elevationSampler;
     const nSegments = nSamples - 1;
