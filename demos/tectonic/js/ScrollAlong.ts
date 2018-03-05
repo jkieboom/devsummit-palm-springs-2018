@@ -101,7 +101,7 @@ export class ScrollAlong extends declared(Accessor) {
     this.view.clippingArea = this.viewport.clippingArea;
 
     const center = this.viewport.clippingArea.center.clone();
-    center.z = 2500;
+    center.z = 1500;
 
     this.view.goTo({
       target: center,

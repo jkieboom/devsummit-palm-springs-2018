@@ -521,7 +521,7 @@ const tmpOrigin = [0, 0, 0];
 
 interface ConstructProperties {
   view: esri.SceneView;
-  top: number;
+  top?: number;
   bottom: number;
 }
 
