@@ -57,10 +57,6 @@ export class ExaggerationElevationLayer extends declared(BaseElevationLayer) {
   //--------------------------------------------------------------------------
 
   load(): IPromise<any> {
-    this._set("elevationLayer", new ElevationLayer({
-      url: "//elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/TopoBathy3D/ImageServer"
-    }));
-
     // wait for the elevation layer to load before resolving load()
     this.addResolvingPromise(this.elevationLayer.load());
     return;

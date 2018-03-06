@@ -235,8 +235,12 @@ export class View extends declared(Accessor) {
       url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
     });
 
-    const worldElevationLayer = new ElevationLayer({
-      url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
+    // const worldElevationLayer = new ElevationLayer({
+    //   url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
+    // });
+
+    const bathyElevationLayer = new ElevationLayer({
+      url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/TopoBathy3D/ImageServer"
     });
 
     return new Map({
@@ -252,7 +256,7 @@ export class View extends declared(Accessor) {
         layers: [
           new ExaggerationElevationLayer({
             exaggerationFactor: 3,
-            elevationLayer: worldElevationLayer
+            elevationLayer: bathyElevationLayer
           })
         ]
       }
