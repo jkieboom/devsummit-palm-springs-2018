@@ -3,10 +3,11 @@
 /// <amd-dependency path="esri/core/tsSupport/generatorHelper" name="__generator" />
 /// <amd-dependency path="esri/core/tsSupport/awaiterHelper" name="__awaiter" />
 
-import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
-
 // esri.core
 import promiseUtils = require("esri/core/promiseUtils");
+
+// esri.core.accessorSupport
+import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
 // esri.layers
 import BaseElevationLayer = require("esri/layers/BaseElevationLayer");

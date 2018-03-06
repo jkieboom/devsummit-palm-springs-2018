@@ -1,13 +1,14 @@
 /// <amd-dependency path="esri/core/tsSupport/declareExtendsHelper" name="__extends" />
 /// <amd-dependency path="esri/core/tsSupport/decorateHelper" name="__decorate" />
 
-import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
-
 // esri
 import { Point, Extent, SpatialReference } from "esri/geometry";
 
 // esri.core
 import Accessor = require("esri/core/Accessor");
+
+// esri.core.accessorSupport
+import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
 /**
  * Represents the viewport of the slice of surface that we want to view.

@@ -273,7 +273,7 @@ interface ConstructProperties {
   clippingArea: Extent;
   elevationSampler: esri.ElevationSampler;
 
-  lines?: Collection<Polyline>;
+  lines?: Collection<Polyline> | Polyline[];
   height?: number;
 }
 

@@ -5,10 +5,11 @@
 
 import esri = __esri;
 
-import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
-
 // esri.core
 import promiseUtils = require("esri/core/promiseUtils");
+
+// esri.core.accessorSupport
+import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
 // esri.layers
 import BaseTileLayer = require("esri/layers/BaseTileLayer");

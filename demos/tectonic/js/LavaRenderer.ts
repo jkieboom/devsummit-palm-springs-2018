@@ -3,14 +3,15 @@
 
 import esri = __esri;
 
-import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
-
 // esri
 import { Point } from "esri/geometry";
 
 // esri.core
 import watchUtils = require("esri/core/watchUtils");
 import Accessor = require("esri/core/Accessor");
+
+// esri.core.accessorSupport
+import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
 // esri.views.3d
 import externalRenderers = require("esri/views/3d/externalRenderers");

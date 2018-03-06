@@ -1,19 +1,36 @@
 /// <amd-dependency path="esri/core/tsSupport/generatorHelper" name="__generator" />
 /// <amd-dependency path="esri/core/tsSupport/awaiterHelper" name="__awaiter" />
 
+// esri
+import Map = require("esri/Map");
+import { Polyline, SpatialReference } from "esri/geometry";
+
+// esri.core
+import watchUtils = require("esri/core/watchUtils");
+
+// esri.layers
 import TileLayer = require("esri/layers/TileLayer");
 import ElevationLayer = require("esri/layers/ElevationLayer");
 import FeatureLayer = require("esri/layers/FeatureLayer");
-import Map = require("esri/Map");
-import SceneView = require("esri/views/SceneView");
-import { Polyline, SpatialReference } from "esri/geometry";
-import watchUtils = require("esri/core/watchUtils");
+
+// esri.renderers
+import SimpleRenderer = require("esri/renderers/SimpleRenderer");
+
+// esri.symbols
 import FillSymbol3DLayer = require("esri/symbols/FillSymbol3DLayer");
 import MeshSymbol3D = require("esri/symbols/MeshSymbol3D");
+
+// esri.symbols.edges
 import SolidEdges3D = require("esri/symbols/edges/SolidEdges3D");
 import SketchyEdges3D = require("esri/symbols/edges/SketchyEdges3D");
+
+// esri.tasks
 import QueryTask = require("esri/tasks/QueryTask");
 
+// esri.views
+import SceneView = require("esri/views/SceneView");
+
+// app
 import { BlendLayer } from "./BlendLayer";
 import { ExaggerationElevationLayer } from "./ExaggerationElevationLayer";
 import { Viewport } from "./Viewport";
@@ -22,103 +39,43 @@ import { DOMElement3D } from "./DOMElement3D";
 import { LavaRenderer } from "./LavaRenderer";
 import { PlateBoundaryLayer } from "./PlateBoundaryLayer";
 import { TectonicPlatesLayer } from "./TectonicPlatesLayer";
-
-let scrollAlong: ScrollAlong;
-let view: SceneView;
-let lavaRenderer: LavaRenderer;
+import { Overview } from "./Overview";
+import { View } from "./View";
 
 export async function run() {
-  const tectonicPaths = await getTectonicPaths();
+  const tectonicPlateBoundaryLine = await getTectonicPlateBoundaryLine();
 
-  const map = createMap();
+  // Setup the basic view
+  const view = new View({ tectonicPlateBoundaryLine });
 
-  const viewport = new Viewport();
+  // Camera updates
+  createScrollAlong(view, tectonicPlateBoundaryLine);
 
-  view = createView({ map, viewport });
-  scrollAlong = new ScrollAlong({ view, viewport, path: tectonicPaths[1] });
+  // Custom rendered data
+  create3DTitle(view);
 
-  const titleElement = document.getElementById("title");
-  new DOMElement3D({ view, viewport, element: titleElement, elevation: 10000 });
+  // Overview map
+  createOverview(view);
 
-  lavaRenderer = new LavaRenderer({ view, top: -4000, bottom: -8000 });
 
-  view.on("key-down", ev => {
-    if (ev.key === " ") {
-      lavaRenderer.playing = !lavaRenderer.playing;
-    }
-  });
-
-  let pathLayer: PlateBoundaryLayer;
-  let platesLayer: TectonicPlatesLayer;
-
-  view.watch("clippingArea", clippingArea => {
-    if (pathLayer) {
-      pathLayer.clippingArea = clippingArea;
-      platesLayer.clippingArea = clippingArea;
-    }
-  });
-
-  createOverviewView({
-    map: createOverviewMap(),
-    viewport
-  });
-
-  watchUtils.whenOnce(view, "groundView.elevationSampler")
-      .then(() => {
-        pathLayer = new PlateBoundaryLayer({
-          clippingArea: view.clippingArea,
-          symbol: new MeshSymbol3D({
-            symbolLayers: [
-              new FillSymbol3DLayer({
-                material: {
-                  color: [100, 100, 255, 0.5]
-                },
-                edges: new SolidEdges3D({
-                  color: "white",
-                  size: "3px"
-                })
-              })
-            ]
-          }),
-          elevationSampler: view.groundView.elevationSampler,
-          height: 1000
-        });
-
-        pathLayer.lines.add(tectonicPaths[1]);
-        map.add(pathLayer);
-
-        platesLayer = new TectonicPlatesLayer({
-          clippingArea: view.clippingArea,
-          symbol: new MeshSymbol3D({
-            symbolLayers: [
-              new FillSymbol3DLayer({
-                edges: new SketchyEdges3D({ size: "1px", extensionLength: "5px" })
-              })
-            ]
-          }),
-          elevationSampler: view.groundView.elevationSampler
-        });
-
-        map.add(platesLayer);
-
-        // HACKS HACKS HACKS
-        view.whenLayerView(platesLayer).then(lv => {
-          (lv as any).updateClippingExtent = () => true;
-        }, err => console.error(err));
-
-        view.whenLayerView(pathLayer).then(lv => {
-          (lv as any).updateClippingExtent = () => true;
-        }, err => console.error(err));
-      });
-
-  window.view = view;
-
-  scrollAlong;
+  window.view = view.view;
 }
 
-const boundariesServiceUrl = "https://services2.arcgis.com/cFEFS0EWrhfDeVw9/ArcGIS/rest/services/PB2002_boundaries/FeatureServer/0";
+function createOverview(view: View) {
+  return new Overview({ viewport: view.viewport });
+}
 
-async function getTectonicPaths() {
+function createScrollAlong(view: View, path: Polyline) {
+  return new ScrollAlong({ view: view.view, viewport: view.viewport, path });
+}
+
+function create3DTitle(view: View) {
+  const titleElement = document.getElementById("title");
+  return new DOMElement3D({ view: view.view, viewport: view.viewport, element: titleElement, elevation: 10000 });
+}
+
+
+async function getTectonicPlateBoundaryLine() {
   const query = new QueryTask({
     url: boundariesServiceUrl
   });
@@ -128,131 +85,7 @@ async function getTectonicPaths() {
     returnGeometry: true
   });
 
-  return featureSet.features.map(feature => feature.geometry as Polyline);
+  return featureSet.features[1].geometry as Polyline;
 }
 
-function createOverviewMap() {
-  const hillShadeLayer = new TileLayer({
-    url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer"
-  });
-
-  const baseImageLayer = new TileLayer({
-    url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
-  });
-
-  const map = new Map({
-    basemap: {
-      baseLayers: [
-        new BlendLayer({
-          multiplyLayers: [ baseImageLayer, hillShadeLayer ]
-        })
-      ]
-    },
-  });
-
-  const layer = new FeatureLayer({
-    url: boundariesServiceUrl,
-    definitionExpression: "Name = 'EU-IN'",
-    renderer: {
-      type: "simple",
-      symbol: {
-        type: "line-3d",
-        symbolLayers: [
-          {
-            type: "path",
-            size: 5000,
-            material: {
-              color: [100, 100, 255, 0.5]
-            }
-          }
-        ]
-      }
-    } as any
-  });
-
-  map.add(layer);
-  return map;
-}
-
-function createOverviewView(params: { map: Map; viewport: Viewport }) {
-  const view = new SceneView({
-    container: "overviewDiv",
-    map: params.map,
-    ui: {
-      components: []
-    }
-  });
-
-  function syncView() {
-    view.goTo({
-      target: params.viewport.clippingArea.center,
-      scale: 3000000
-    }, { duration: 100 });
-  }
-
-  params.viewport.watch("clippingArea", syncView);
-  syncView();
-}
-
-// Create a local view with the provided map and clipping area
-function createView(params: { map: Map; viewport: Viewport }) {
-  const view = new SceneView({
-    container: "viewDiv",
-    map: params.map,
-    viewingMode: "local",
-
-    camera: {
-      position: { x: 72.82262538, y: 34.53997748, z: 20154.72966 },
-      heading: 154.86,
-      tilt: 71.97
-    },
-
-    clippingArea: params.viewport.clippingArea,
-
-    ui: {
-      components: ["attribution"]
-    }
-  });
-
-  return view;
-}
-
-// Create the basic map with custom layers that improve perception
-// of mountains and ridges:
-//
-// 1. A basmap containing a custom layer that blends
-//    hill shading on top of satellite imagery
-// 2. A ground containing a custom elevation layer that exaggerates
-//    elevation
-function createMap() {
-  const hillShadeLayer = new TileLayer({
-    url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer"
-  });
-
-  const baseImageLayer = new TileLayer({
-    url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
-  });
-
-  const worldElevationLayer = new ElevationLayer({
-    url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
-  });
-
-  return new Map({
-    basemap: {
-      baseLayers: [
-        new BlendLayer({
-          multiplyLayers: [ baseImageLayer, hillShadeLayer ]
-        })
-      ]
-    },
-
-    ground: {
-      layers: [
-        new ExaggerationElevationLayer({
-          exaggerationFactor: 3,
-          elevationLayer: worldElevationLayer
-        })
-      ]
-    }
-  });
-}
+const boundariesServiceUrl = "https://services2.arcgis.com/cFEFS0EWrhfDeVw9/ArcGIS/rest/services/PB2002_boundaries/FeatureServer/0";

@@ -3,13 +3,14 @@
 
 import esri = __esri;
 
-import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
-
 // esri
 import { Extent, Polyline, Point } from "esri/geometry";
 
 // esri.core
 import Accessor = require("esri/core/Accessor");
+
+// esri.core.accessorSupport
+import { subclass, property, declared } from "esri/core/accessorSupport/decorators";
 
 // app
 import { Viewport } from "./Viewport";
