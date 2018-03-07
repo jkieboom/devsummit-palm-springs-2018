@@ -843,9 +843,8 @@ Lift symbols above the ground for better visibility.
   symbolLayers: ...,
 
   verticalOffset: {
-    screenLength: 40,
-    maxWorldLength: 200,
-    minWorldLength: 35
+    screenLength: 30,
+    maxWorldLength: 200
   },
 
   callout: new LineCallout3D({
