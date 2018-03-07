@@ -676,6 +676,15 @@ class WebScene extends Map {
 
 ---
 
+## New 3D widgets
+
+- Direct line measurement
+- [`esri/widgets/DirectLineMeasurement3D`](https://developers.arcgis.com/javascript/latest/sample-code/widgets-directlinemeasurement-3d/live/index.html)
+
+<img width="50%" src="./images/measure.png"/>
+
+---
+
 <!-- .slide: data-background="./images/bg-8 .png" -->
 
 # Building an App
