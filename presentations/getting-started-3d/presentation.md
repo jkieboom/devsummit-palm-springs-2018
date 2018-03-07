@@ -559,7 +559,7 @@ function updateRenderer(pointSize, density) {
 <table class="symbology">
   <tr>
     <th>point</th>
-    <th>polyline</th>
+    <th>line</th>
     <th>polygon</th>
   </tr>
   <tr>
