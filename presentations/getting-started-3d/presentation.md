@@ -958,8 +958,6 @@ portal.load().then(function() {
   </div>
 </div>
 
-Final webscene: http://arcg.is/1q0avT
-
 ---
 
 <!-- .slide: data-background="./images/bg-final.jpg" -->
