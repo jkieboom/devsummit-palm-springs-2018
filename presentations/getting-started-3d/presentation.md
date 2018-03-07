@@ -84,13 +84,11 @@ class SceneView {
   // Camera specifies the view
   camera: Camera;
 
+  // Animations, framing
   goTo(...);
 
-  // Settings that affect constraints (e.g. navigation constraints)
-  constraints: SceneViewConstraints;
-
-  // Padding on the view
-  padding: { top: number, right: number, bottom: number, left: number };
+  // Finding graphics at screen locations
+  hitTest(...);
 
   // Converting coordinate systems
   toScreen(mapPoint: Point): ScreenPoint;
