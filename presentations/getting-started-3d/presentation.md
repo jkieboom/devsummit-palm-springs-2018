@@ -299,6 +299,19 @@ layer3.elevationInfo = {
   </div>
 </div>
 
+---
+
+## Layers 3D
+
+| Layer type   | Characteristics |
+|--------------|-----------------|
+| `ElevationLayer` | raster, cached |
+| `SceneLayer` | vector |
+| `IntegratedMeshLayer` | vector |
+| `PointCloudLayer` | vector |
+
+---
+
 ## Layers 3D &mdash; `ElevationLayer`
 
 - Elevation services
