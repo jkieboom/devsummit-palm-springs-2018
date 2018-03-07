@@ -116,8 +116,8 @@ div.left-column {
 }
 
 button.play {
-	width: 24px;
-	height: 24px;
+	width: 32px;
+  height: 32px;
 
 	border: none;
 	outline:none;
@@ -130,7 +130,7 @@ button.play {
 
 	background-color: rgba(0,0,0,0);
 	background-image: url("../images/play_64_50.png");
-	background-size: 24px;
+	background-size: 32px;
 	background-repeat: no-repeat;
 
 	z-index: 10;
