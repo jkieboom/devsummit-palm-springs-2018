@@ -11,6 +11,8 @@
 <p>Javier Gutierrez, ESRI R&amp;D Center Z&uuml;rich</p>
 <p>Jesse van den Kieboom, ESRI R&amp;D Center Z&uuml;rich</p>
 
+https://github.com/jkieboom/devsummit-palm-springs-2018
+
 ---
 
 <!-- .slide: data-background="./images/bg-8 .png" -->
