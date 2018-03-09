@@ -393,6 +393,8 @@ export function set<T, P extends keyof T>(instance: T, propName: P, propValue: T
 - API classes are using dojo declare, requires some additional work to integrate with TS
 - [Code](./demos/subclass)
 
+---
+
 ## Multiple inheritance
 
 - Multiple inheritance possible with dojo declare
