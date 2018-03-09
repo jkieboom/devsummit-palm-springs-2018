@@ -50,15 +50,15 @@ export async function run() {
 
   // Step 2: Overview map
   //
-  // createOverview(view);
+  createOverview(view);
 
   // Step 3: Custom 2.5D dom
   //
-  // create3DDOMElements(view);
+  create3DDOMElements(view);
 
   // Step 6: Camera updates
   //
-  // createScrollAlong(view, tectonicPlateBoundaryLine);
+  createScrollAlong(view, tectonicPlateBoundaryLine);
 
   window.view = view;
 }

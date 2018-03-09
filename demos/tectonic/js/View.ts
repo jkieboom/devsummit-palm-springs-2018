@@ -56,11 +56,11 @@ export class View extends declared(Accessor) {
 
     // Step 5: tectonic plates subdiction
     //
-    // this.createTectonicPlatesLayer();
+    this.createTectonicPlatesLayer();
 
     // Step 7: finishing touches
     //
-    // this.createLavaRenderer();
+    this.createLavaRenderer();
   }
 
   //--------------------------------------------------------------------------
@@ -115,8 +115,8 @@ export class View extends declared(Accessor) {
     // Step 4: Elevation profile along boundary
     //
 
-    await this.createPlateBoundaryLayerSimple();
-    // await this.createPlateBoundaryLayerProfile();
+    // await this.createPlateBoundaryLayerSimple();
+    await this.createPlateBoundaryLayerProfile();
   }
 
   private async createPlateBoundaryLayerSimple() {
@@ -244,8 +244,8 @@ export class View extends declared(Accessor) {
       basemap: {
         baseLayers: [
           new BlendLayer({
-            multiplyLayers: [ baseImageLayer ]
-            // multiplyLayers: [ baseImageLayer, hillShadeLayer ]
+            // multiplyLayers: [ baseImageLayer ]
+            multiplyLayers: [ baseImageLayer, hillShadeLayer ]
           })
         ]
       },
@@ -253,8 +253,8 @@ export class View extends declared(Accessor) {
       ground: {
         layers: [
           new ExaggerationElevationLayer({
-            exaggerationFactor: 1,
-            // exaggerationFactor: 2,
+            // exaggerationFactor: 1,
+            exaggerationFactor: 2,
             elevationLayer: worldElevationLayer
           })
         ]
