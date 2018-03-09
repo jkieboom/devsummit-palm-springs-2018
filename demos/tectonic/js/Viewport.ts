@@ -37,10 +37,10 @@ export class Viewport extends declared(Accessor) {
 
   @property()
   center: Point = new Point({
-    x: 8129617.88483645,
-    y: 4052445.62428827,
+    x: 9745688.759045323,
+    y: 3118756.1269532256,
     spatialReference: SpatialReference.WebMercator
-  })
+  });
 
   //----------------------------------
   //  clippingArea

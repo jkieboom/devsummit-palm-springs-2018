@@ -25,7 +25,7 @@ export function createProgram(gl: WebGLRenderingContext, name: string, vertex: s
   const uniformLocations: { [key: string]: WebGLUniformLocation } = {};
 
   if (uniforms) {
-    for (let uniformName of uniforms) {
+    for (const uniformName of uniforms) {
       uniformLocations[uniformName] = gl.getUniformLocation(program, uniformName);
     }
   }

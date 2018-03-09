@@ -121,23 +121,25 @@ export class PlateBoundaryLayer extends declared(GraphicsLayer) {
   }
 
   /**
-   * Updates the geometry when elevation or the clipping area has
-   * changed.
+   * Creates a mesh geometry that follows the line representing
+   * a plate boundary. The line is clipped to the clipping area,
+   * densified, enriched with z-values from the ground surface
+   * and then tesselated to create the mesh.
+   *
+   * @param line the line.
    */
-  private update() {
-    this.graphics.removeAll();
+  private createPathGeometry(line: Polyline) {
+    // Clip against clipping area using geometry engine
+    const clipped = this.clipLine(line);
 
-    // Create a path geometry for plate boundary
-    const graphics = this.lines.map(line => {
-      const geometry = this.createPathGeometry(line);
+    // Create a simple "curtain" by densifying the line and extruding it up
+    const densified = this.densifyLine(clipped);
 
-      return new Graphic({
-        geometry,
-        symbol: this.symbol
-      });
-    });
+    // Add elevation values from the elevation sampler
+    const withElevation = this.elevationSampler.queryElevation(densified) as Polyline;
 
-    this.graphics.addMany(graphics);
+    const mesh = this.createExtrudedMesh(withElevation);
+    return mesh;
   }
 
   /**
@@ -246,25 +248,23 @@ export class PlateBoundaryLayer extends declared(GraphicsLayer) {
   }
 
   /**
-   * Creates a mesh geometry that follows the line representing
-   * a plate boundary. The line is clipped to the clipping area,
-   * densified, enriched with z-values from the ground surface
-   * and then tesselated to create the mesh.
-   *
-   * @param line the line.
+   * Updates the geometry when elevation or the clipping area has
+   * changed.
    */
-  private createPathGeometry(line: Polyline) {
-    // Clip against clipping area using geometry engine
-    const clipped = this.clipLine(line);
+  private update() {
+    this.graphics.removeAll();
 
-    // Create a simple "curtain" by densifying the line and extruding it up
-    const densified = this.densifyLine(clipped);
+    // Create a path geometry for plate boundary
+    const graphics = this.lines.map(line => {
+      const geometry = this.createPathGeometry(line);
 
-    // Add elevation values from the elevation sampler
-    const withElevation = this.elevationSampler.queryElevation(densified) as Polyline;
+      return new Graphic({
+        geometry,
+        symbol: this.symbol
+      });
+    });
 
-    const mesh = this.createExtrudedMesh(withElevation);
-    return mesh;
+    this.graphics.addMany(graphics);
   }
 }
 

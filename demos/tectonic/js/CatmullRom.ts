@@ -105,7 +105,7 @@ export class CatmullRom extends declared(Accessor) {
    */
   private computeSegments() {
     let totalLength = 0;
-    let segments: Segment[] = [];
+    const segments: Segment[] = [];
 
     // Ignore start/end, generate coefficients for all segments in between
     for (let i = 1; i < this.points.length - 2; i++) {
@@ -121,7 +121,7 @@ export class CatmullRom extends declared(Accessor) {
       totalLength += length;
     }
 
-    for (let segment of segments) {
+    for (const segment of segments) {
       segment.start /= totalLength;
       segment.end /= totalLength;
     }

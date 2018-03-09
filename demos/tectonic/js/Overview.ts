@@ -23,7 +23,7 @@ import SimpleRenderer = require("esri/renderers/SimpleRenderer");
 import FillSymbol3DLayer = require("esri/symbols/FillSymbol3DLayer");
 
 // esri.views
-import SceneView = require("esri/views/SceneView");
+import MapView = require("esri/views/MapView");
 
 // app
 import { BlendLayer } from "./BlendLayer";
@@ -57,7 +57,7 @@ export class Overview extends declared(Accessor) {
   //----------------------------------
 
   @property({ readOnly: true })
-  readonly view: SceneView;
+  readonly view: MapView;
 
   //----------------------------------
   //  viewport
@@ -72,42 +72,16 @@ export class Overview extends declared(Accessor) {
   //
   //--------------------------------------------------------------------------
 
-  /**
-   * Creates an overview map with a topological basemap layer (enhanced with
-   * hillshading) and a plain feature layer showing the tectonic plate
-   * boundaries.
-   */
   private createMap() {
-    const hillShadeLayer = new TileLayer({
-      url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer"
-    });
-
-    const baseImageLayer = new TileLayer({
-      url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
-    });
-
     const map = new Map({
-      basemap: {
-        baseLayers: [
-          new BlendLayer({
-            multiplyLayers: [ baseImageLayer, hillShadeLayer ]
-          })
-        ]
-      },
+      basemap: "topo-vector"
     });
 
     const renderer = new SimpleRenderer({
       symbol: {
-        type: "line-3d",
-        symbolLayers: [
-          {
-            type: "path",
-            size: 5000,
-            material: {
-              color: [100, 255, 255, 0.5]
-            }
-          }
-        ]
+        type: "simple-line",
+        width: "5px",
+        color: [100, 255, 255, 0.5]
       }
     });
 
@@ -122,18 +96,20 @@ export class Overview extends declared(Accessor) {
   }
 
   private createView(map: Map, viewport: Viewport) {
-    const view = new SceneView({
+    const view = new MapView({
       container: "overviewDiv",
       map,
       ui: { components: [] }
     });
 
-    // Synchronize the view to the viewport clipping area
-    watchUtils.init(viewport, "clippingArea", () => {
-      view.goTo({
-        target: viewport.clippingArea.center,
-        scale: 3000000
-      }, { duration: 100 });
+    view.when(() => {
+      // Synchronize the view to the viewport clipping area
+      watchUtils.init(viewport, "clippingArea", () => {
+        view.goTo({
+          target: viewport.clippingArea.center,
+          scale: 3000000
+        });
+      });
     });
   }
 }

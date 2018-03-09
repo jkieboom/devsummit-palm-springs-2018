@@ -35,10 +35,8 @@ export class DOMElement3D extends declared(Accessor) {
 
   initialize() {
     this.view.watch(["camera", "size"], () => this.update());
-    this.viewport.watch("clippingArea", () => this.update());
 
     this.update();
-    this.element.classList.add("make-visible");
 
     whenOnce(this.view, "ready", () => this.update());
   }
@@ -57,11 +55,14 @@ export class DOMElement3D extends declared(Accessor) {
   readonly view: esri.SceneView;
 
   //----------------------------------
-  //  viewport
+  //  location
   //----------------------------------
 
-  @property({ constructOnly: true })
-  readonly viewport: Viewport;
+  @property()
+  set location(value: Point) {
+    this._set("location", value);
+    this.update();
+  }
 
   //----------------------------------
   //  element
@@ -70,12 +71,11 @@ export class DOMElement3D extends declared(Accessor) {
   @property({ constructOnly: true })
   readonly element: HTMLElement;
 
-  //----------------------------------
-  //  elevation
-  //----------------------------------
-
-  @property({ constructOnly: true })
-  readonly elevation: number;
+  @property({ value: 0 })
+  set heading(value: number) {
+    this._set("heading", value);
+    this.update();
+  }
 
   //--------------------------------------------------------------------------
   //
@@ -88,34 +88,29 @@ export class DOMElement3D extends declared(Accessor) {
    * called whenever the view or the clipping area has changed.
    */
   private update() {
-    if (!this.view.ready) {
+    if (!this.view.ready || !this.location) {
       return;
     }
 
-    const clip = this.view.clippingArea;
-    const spatialReference = clip.spatialReference;
+    if (!this.element.classList.contains("make-visible")) {
+      this.element.classList.add("make-visible");
+    }
 
-    // Position the element in between the ymin segment of the clipping area
-    const pt1 = new Point({ x: clip.xmin, y: clip.ymin, z: this.elevation, spatialReference });
-    const pt2 = new Point({ x: clip.xmax, y: clip.ymin, z: this.elevation, spatialReference });
-
-    // Convert the map points to screen coordinates
-    const s1 = this.view.toScreen(pt1);
-    const s2 = this.view.toScreen(pt2);
+    const screenLocation = this.view.toScreen(this.location);
 
     // Figure out the absolute translation to position the bottom center
     // of the element in between s1 and s2
-    const translationX = (-this.element.clientWidth + s1.x + s2.x) / 2;
-    const translationY = (s1.y + s2.y) / 2;
+    const translationX = -this.element.clientWidth / 2 + screenLocation.x;
+    const translationY = screenLocation.y - this.element.clientHeight;
 
     // Figure out the rotation based on the heading and tilt of the camera
-    const heading = this.view.camera.heading;
+    const heading = this.view.camera.heading - this.heading;
 
     // Heading translates to rotation around the Y axis. Since we are positioning
     // the element on the ymin plane of the clipping area, we add 180 degrees
     // to the camera heading. We also have to rotate in the opposite direction
     // as the camera heading since the element is facing the camera.
-    const rotationY = -(heading < 180 ? heading + 360 : heading) + 180;
+    const rotationY = -(heading < 180 ? heading + 360 : heading);
 
     // Tilt translates to rotation around the X axis, 90deg camera tilt means
     // 0 degree CSS rotation, so that the element is standing up from the surface
@@ -130,9 +125,9 @@ export class DOMElement3D extends declared(Accessor) {
 
 interface ConstructProperties {
   view: esri.SceneView;
-  viewport: Viewport;
-  elevation: number;
   element: HTMLElement;
+  location?: Point;
+  heading?: number;
 }
 
 export default DOMElement3D;

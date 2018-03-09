@@ -1,3 +1,3 @@
 interface Window {
-  view: __esri.SceneView;
+  view: any;
 }

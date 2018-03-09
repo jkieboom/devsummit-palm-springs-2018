@@ -12,12 +12,15 @@ html, body, #viewDiv {
   position: absolute;
   top: 12px;
   right: 12px;
+  background-color: white;
 }
 
 .delayed-visible {
   opacity: 0;
-  transition: opacity 300ms ease;
-  -webkit-transition: opacity 300ms ease;
+  transition: opacity 1000ms ease;
+  -webkit-transition: opacity 1000ms ease;
+  transition-delay: 2s;
+  -webkit-transition-delay: 2s;
 }
 
 .make-visible {
@@ -25,13 +28,25 @@ html, body, #viewDiv {
 }
 
 #title {
-  position: absolute;
-  top: 0; left: 0;
   font-size: 3em;
   text-shadow: -1px -1px 0 #fff,
     1px -1px 0 #fff,
     -1px 1px 0 #fff,
      1px 1px 0 #fff;
+}
+
+#description {
+  max-width: 300px;
+  font-size: 0.9em;
+  text-shadow: -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+     1px 1px 0 #fff;
+}
+
+.dom25d {
+  position: absolute;
+  top: 0; left: 0;
   pointer-events: none;
-  transform-origin: center;
+  transform-origin: bottom;
 }

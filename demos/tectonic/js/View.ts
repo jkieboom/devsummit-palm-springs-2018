@@ -53,8 +53,14 @@ export class View extends declared(Accessor) {
     this._set("viewport", new Viewport());
     this.createView();
     this.createPlateBoundaryLayer();
-    this.createTectonicPlatesLayer();
-    this.createLavaRenderer();
+
+    // Step 5: tectonic plates subdiction
+    //
+    // this.createTectonicPlatesLayer();
+
+    // Step 7: finishing touches
+    //
+    // this.createLavaRenderer();
   }
 
   //--------------------------------------------------------------------------
@@ -84,6 +90,13 @@ export class View extends declared(Accessor) {
   @property({ constructOnly: true })
   readonly tectonicPlateBoundaryLine: Polyline;
 
+  //----------------------------------
+  //  hillShadingEnabled
+  //----------------------------------
+
+  @property({ readOnly: true })
+  readonly hillShadeLayer: TileLayer;
+
   //--------------------------------------------------------------------------
   //
   //  Variables
@@ -98,52 +111,40 @@ export class View extends declared(Accessor) {
   //
   //--------------------------------------------------------------------------
 
-  private createLavaRenderer() {
-    this.lavaRenderer = new LavaRenderer({ view: this.view, top: -4000, bottom: -8000 });
+  private async createPlateBoundaryLayer() {
+    // Step 4: Elevation profile along boundary
+    //
 
-    // Add ability to pause/resume the lava animation with pressing Space
-    this.view.on("key-down", ev => {
-      if (ev.key === " ") {
-        this.lavaRenderer.playing = !this.lavaRenderer.playing;
-      }
-    });
+    await this.createPlateBoundaryLayerSimple();
+    // await this.createPlateBoundaryLayerProfile();
   }
 
-  private async createTectonicPlatesLayer() {
-    await watchUtils.whenOnce(this.view, "groundView.elevationSampler");
-
-    // Basic mesh symbol with sketchy edges
-    const symbol = new MeshSymbol3D({
-      symbolLayers: [
-        new FillSymbol3DLayer({
-          edges: new SketchyEdges3D({ size: "1px", extensionLength: "5px" })
-        })
-      ]
+  private async createPlateBoundaryLayerSimple() {
+    const renderer = new SimpleRenderer({
+      symbol: {
+        type: "line-3d",
+        symbolLayers: [
+          {
+            type: "line",
+            size: 5,
+            material: {
+              color: [100, 255, 255, 0.5]
+            }
+          }
+        ]
+      }
     });
 
-    // Initial clipping area
-    const clippingArea = this.view.clippingArea;
-
-    // Elevation sampler from the ground view
-    const elevationSampler = this.view.groundView.elevationSampler;
-
-    const layer = new TectonicPlatesLayer({
-      clippingArea,
-      symbol,
-      elevationSampler
+    const layer = new FeatureLayer({
+      url: "https://services2.arcgis.com/cFEFS0EWrhfDeVw9/ArcGIS/rest/services/PB2002_boundaries/FeatureServer/0",
+      definitionExpression: "Name = 'EU-IN'",
+      renderer
     });
 
     this.view.map.add(layer);
-
-    // TODO: this is a hack required for smooth updates
-    const ret = await this.view.whenLayerView(layer).then(layerView => ({ layerView }));
-    (ret.layerView as any).updateClippingExtent = () => true;
-
-    // Make sure the clipping area synchronizes from the view to the layer
-    this.syncClippingArea(layer);
   }
 
-  private async createPlateBoundaryLayer() {
+  private async createPlateBoundaryLayerProfile() {
     await watchUtils.whenOnce(this.view, "groundView.elevationSampler");
 
     // Basic mesh symbol with white 3px edges
@@ -204,9 +205,9 @@ export class View extends declared(Accessor) {
       viewingMode: "local",
 
       camera: {
-        position: { x: 72.82262538, y: 34.53997748, z: 20154.72966 },
-        heading: 154.86,
-        tilt: 71.97
+        position: { x: 87.22524752, y: 27.18392724, z: 26046.80071 },
+        heading: 127.73,
+        tilt: 61.54
       },
 
       clippingArea: this.viewport.clippingArea,
@@ -235,19 +236,16 @@ export class View extends declared(Accessor) {
       url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
     });
 
-    // const worldElevationLayer = new ElevationLayer({
-    //   url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
-    // });
-
-    const bathyElevationLayer = new ElevationLayer({
-      url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/TopoBathy3D/ImageServer"
+    const worldElevationLayer = new ElevationLayer({
+      url: "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
     });
 
     return new Map({
       basemap: {
         baseLayers: [
           new BlendLayer({
-            multiplyLayers: [ baseImageLayer, hillShadeLayer ]
+            multiplyLayers: [ baseImageLayer ]
+            // multiplyLayers: [ baseImageLayer, hillShadeLayer ]
           })
         ]
       },
@@ -255,10 +253,76 @@ export class View extends declared(Accessor) {
       ground: {
         layers: [
           new ExaggerationElevationLayer({
-            exaggerationFactor: 3,
-            elevationLayer: bathyElevationLayer
+            exaggerationFactor: 1,
+            // exaggerationFactor: 2,
+            elevationLayer: worldElevationLayer
           })
         ]
+      }
+    });
+  }
+
+
+
+
+
+  private async createTectonicPlatesLayer() {
+    await watchUtils.whenOnce(this.view, "groundView.elevationSampler");
+
+    // Basic mesh symbol with sketchy edges
+    const symbolBand = new MeshSymbol3D({
+      symbolLayers: [
+        new FillSymbol3DLayer({
+          edges: new SketchyEdges3D({ size: "1px", extensionLength: "5px" })
+        })
+      ]
+    });
+
+    const symbolEarth = new MeshSymbol3D({
+      symbolLayers: [
+        new FillSymbol3DLayer({
+          material: {
+            color: "white"
+          }
+        })
+      ]
+    });
+
+    // Initial clipping area
+    const clippingArea = this.view.clippingArea;
+
+    // Elevation sampler from the ground view
+    const elevationSampler = this.view.groundView.elevationSampler;
+
+    const layer = new TectonicPlatesLayer({
+      clippingArea,
+      symbolBand,
+      symbolEarth,
+      elevationSampler
+    });
+
+    this.view.map.add(layer);
+
+    // TODO: this is a hack required for smooth updates
+    const ret = await this.view.whenLayerView(layer).then(layerView => ({ layerView }));
+    (ret.layerView as any).updateClippingExtent = () => true;
+
+    // Make sure the clipping area synchronizes from the view to the layer
+    this.syncClippingArea(layer);
+  }
+
+
+
+
+
+
+  private createLavaRenderer() {
+    this.lavaRenderer = new LavaRenderer({ view: this.view, top: -4000, bottom: -8000 });
+
+    // Add ability to pause/resume the lava animation with pressing Space
+    this.view.on("key-down", ev => {
+      if (ev.key === " ") {
+        this.lavaRenderer.playing = !this.lavaRenderer.playing;
       }
     });
   }

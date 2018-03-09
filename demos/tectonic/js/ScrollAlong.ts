@@ -73,8 +73,8 @@ export class ScrollAlong extends declared(Accessor) {
   //--------------------------------------------------------------------------
 
   private interpolatedPath: CatmullRom;
-  private positionOnPath = 0;
-  private userHeadingDelta = 0;
+  private positionOnPath = 0.6513702167390425;
+  private userHeadingDelta = 16.22429524083836;
 
   //--------------------------------------------------------------------------
   //

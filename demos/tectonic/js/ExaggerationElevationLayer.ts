@@ -92,7 +92,7 @@ export class ExaggerationElevationLayer extends declared(BaseElevationLayer) {
   private async _fetchTile(level: number, row: number, col: number) {
     const data = await this.elevationLayer.fetchTile(level, row, col);
 
-    for (var i = 0; i < data.values.length; i++) {
+    for (let i = 0; i < data.values.length; i++) {
       data.values[i] *= this.exaggerationFactor;
     }
 

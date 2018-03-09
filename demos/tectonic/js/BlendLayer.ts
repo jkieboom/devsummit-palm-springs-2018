@@ -32,6 +32,12 @@ export class BlendLayer extends declared(BaseTileLayer) {
     super();
   }
 
+  initialize() {
+    this.multiplyLayers.forEach(layer => {
+      layer.watch("visible", () => this.refresh());
+    });
+  }
+
   //--------------------------------------------------------------------------
   //
   //  Properties
@@ -94,7 +100,7 @@ export class BlendLayer extends declared(BaseTileLayer) {
       // for the tiles visible in the view. Wrap result in a native promise.
       return new Promise<HTMLImageElement | HTMLCanvasElement>((resolve, reject) => {
         layer.fetchTile(level, row, col, { allowImageDataAccess: true })
-            .then(resolve, reject)
+            .then(resolve, reject);
       });
     });
 
@@ -103,10 +109,10 @@ export class BlendLayer extends declared(BaseTileLayer) {
     const images = await Promise.all(tilePromises);
 
     // Create a canvas to composite the images on
-    var width = this.tileInfo.size[0];
-    var height = this.tileInfo.size[0];
-    var canvas = document.createElement("canvas");
-    var context = canvas.getContext("2d");
+    const width = this.tileInfo.size[0];
+    const height = this.tileInfo.size[0];
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
 
     canvas.width = width;
     canvas.height = height;
@@ -115,8 +121,10 @@ export class BlendLayer extends declared(BaseTileLayer) {
     context.globalCompositeOperation = "multiply";
 
     // Composite each of the images
-    for (const image of images) {
-      context.drawImage(image, 0, 0, width, height);
+    for (let i = 0; i < images.length; i++) {
+      if (this.multiplyLayers[i].visible) {
+        context.drawImage(images[i], 0, 0, width, height);
+      }
     }
 
     return canvas;

@@ -43,8 +43,14 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
   readonly elevationSampler: esri.ElevationSampler;
 
   @property()
-  set symbol(value: esri.MeshSymbol3D) {
-    this._set("symbol", value);
+  set symbolBand(value: esri.MeshSymbol3D) {
+    this._set("symbolBand", value);
+    this.update();
+  }
+
+  @property()
+  set symbolEarth(value: esri.MeshSymbol3D) {
+    this._set("symbolEarth", value);
     this.update();
   }
 
@@ -82,11 +88,11 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
     const featureSet = await query.execute({
       where: "PLATEBOUND = 'EU-IN'",
       returnGeometry: false,
-      outFields: ["STARTLONG", "STARTLAT", "FINALLONG", "FINALLAT", "VELOCITYAZ", "VELOCITYDI", "VELOCITYRI"],
+      outFields: ["STARTLONG", "STARTLAT", "FINALLONG", "FINALLAT", "VELOCITYAZ", "VELOCITYDI", "VELOCITYRI", "AZIMUTHCEN"],
       orderByFields: ["SEQNUM"]
     });
 
-    let measurements: Measurement[] = [];
+    const measurements: Measurement[] = [];
 
     for (let i = 0; i < featureSet.features.length; i++) {
       const feature = featureSet.features[i];
@@ -105,7 +111,7 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
 
       if (measurements.length > 0) {
         const previous = measurements[measurements.length - 1];
-        measurements.push({ location: start, velocity: this.calculateVelocityBetween(previous.velocity, velocity) })
+        measurements.push({ location: start, velocity: this.calculateVelocityBetween(previous.velocity, velocity) });
       }
 
       measurements.push({ location, velocity });
@@ -134,25 +140,39 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
   }
 
   private calculateVelocityVector(v: Velocity) {
-    const vec = vec3.fromValues(0, -v.y, -v.z);
-    return vec3.rotateZ(vec3.create(), vec, [0, 0, 0], v.dir);
+    return [ v.length * Math.cos(v.angle), v.length * Math.sin(v.angle) ];
   }
 
   private calculateVelocity(feature: Graphic): Velocity {
     const attr = feature.attributes;
 
-    const dir = attr["VELOCITYAZ"] / 180 * Math.PI;
-    const y = Math.abs(attr["VELOCITYDI"]);
-    const z = Math.abs(attr["VELOCITYRI"]);
+    const a1 = attr["AZIMUTHCEN"] / 180 * Math.PI;
+    const a2 = attr["VELOCITYAZ"] / 180 * Math.PI;
 
-    return { dir, y, z };
+    const v1 = [Math.cos(a1), Math.sin(a1)];
+    const v2 = [Math.cos(a2), Math.sin(a2)];
+    let d = v1[0] * v2[0] + v1[1] * v2[1];
+
+    if (d < 0) {
+      d = -d;
+    }
+
+    const dangle = Math.acos(d) / Math.PI * 180;
+
+    const minAngle = 30;
+    const maxAngle = 80;
+    const angle = minAngle + (maxAngle - minAngle) * ((90 - dangle) / 90);
+    const angleRad = angle / 180 * Math.PI;
+
+    const l = Math.abs(attr["VELOCITYDI"]);
+
+    return { length: l, angle: angleRad };
   }
 
   private calculateVelocityBetween(v1: Velocity, v2: Velocity, f: number = 0.5): Velocity {
     return {
-      dir: this.lerp(v1.dir, v2.dir, f),
-      y: this.lerp(v1.y, v2.y, f),
-      z: this.lerp(v1.z, v2.z, f),
+      length: this.lerp(v1.length, v2.length, f),
+      angle: this.lerp(v1.angle, v2.angle, f)
     };
   }
 
@@ -176,42 +196,61 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
     return [x, a * x + c];
   }
 
-  private createMeshSlice(measurement: Measurement) {
-    const velocity = this.calculateVelocityVector(measurement.velocity);
+  private meshSlicePlateHeight = 1000;
+  private meshSliceHeight = 4000;
+
+  private createMeshSlice(measurement: Measurement, p: number, axis: number) {
+    const velocity = measurement ? this.calculateVelocityVector(measurement.velocity) : [0, 0];
 
     // Interested in projection on X
-    const velYZ = vec2.fromValues(velocity[1], velocity[2]);
+    const velYZ = vec2.fromValues(velocity[0], -velocity[1]);
     const norm = vec2.normalize(vec2.create(), velYZ);
 
-    const mx = measurement.location.x;
-    const my = measurement.location.y;
+    const nElevSamples = 50;
+
+    const mx = measurement ? measurement.location.x : p;
+    const my = measurement ? measurement.location.y : this.clippingArea.ymin;
     const z = 0;
 
-    const { ymin, ymax } = this.clippingArea;
+    let ymin: number, ymax: number;
+
+    if (axis === 0) {
+      ymin = this.clippingArea.ymin;
+      ymax = this.clippingArea.ymax;
+    }
+    else {
+      ymin = this.clippingArea.xmin;
+      ymax = this.clippingArea.xmax;
+    }
+
     const l = vec2.length(velYZ) * 100;
-    const h = 1000;
+    const h = this.meshSlicePlateHeight;
 
     // y = a * x + b
     const pto = [my + norm[0] * h, z + -norm[1] * h];
     const a = norm[1] / norm[0];
     const c = pto[1] - a * pto[0];
 
-    const [ cy1, ] = this.intersectLineLine(a, c, 0, z + h);
-    const [ cy2, ] = this.intersectLineLine(a, c, 0, z);
+    const [ cy1 ] = this.intersectLineLine(a, c, 0, z + h);
+    const [ cy2 ] = this.intersectLineLine(a, c, 0, z);
 
     const dy = my + norm[0] * l;
     const dz = z + norm[1] * l;
 
-    const zd = 4000;
+    const zd = this.meshSliceHeight;
+
+    const gap = 400;
 
     const position = [
       mx, ymin, z + h,
       mx, cy1, z + h,
+      mx, cy1 + gap, z + h,
       mx, ymax, z + h,
 
       mx, ymin, z,
       mx, my, z,
       mx, cy2, z,
+      mx, cy2 + gap, z,
       mx, ymax, z,
 
       mx, dy, dz,
@@ -221,14 +260,21 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
       mx, ymax, z - zd
     ];
 
-    const nElevSamples = 50;
-
-    const pt = new Point({ spatialReference: measurement.location.spatialReference });
+    const pt = new Point({ spatialReference: this.clippingArea.spatialReference });
 
     for (let i = 0; i < nElevSamples; i++) {
       pt.x = mx;
       pt.y = i / (nElevSamples - 1) * (ymax - ymin) + ymin;
+
+      if (axis === 1) {
+        [pt.x, pt.y] = [pt.y, pt.x];
+      }
+
       pt.z = this.elevationSampler.elevationAt(pt);
+
+      if (axis === 1) {
+        [pt.x, pt.y] = [pt.y, pt.x];
+      }
 
       position.push(pt.x, pt.y, pt.z);
       position.push(pt.x, pt.y, z + h);
@@ -249,51 +295,76 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
       uv.push(u, v);
     }
 
-    const band = new Mesh({
-      vertexAttributes: {
-        position,
-        uv
-      },
+    if (axis === 1) {
+      // Swap x/y in vertex attributes
+      for (let i = 0; i < position.length; i += 3) {
+        const x = position[i + 0];
+        const y = position[i + 1];
 
-      components: [
-        {
-          faces: [
-            0, 3, 1,
-            3, 4, 1,
-            4, 5, 1,
-            4, 8, 5,
-            4, 7, 8
-          ],
+        position[i + 0] = y;
+        position[i + 1] = x;
+      }
+    }
 
-          material: {
-            color: this.texturePlate1
-          }
+    let band: Mesh = null;
+    let earthFaces: number[];
+
+    if (measurement) {
+      band = new Mesh({
+        vertexAttributes: {
+          position,
+          uv
         },
-        {
-          faces: [
-            1, 5, 2,
-            5, 6, 2
-          ],
 
-          material: {
-            color: this.texturePlate2
+        components: [
+          {
+            faces: [
+              0, 4, 1,
+              4, 5, 1,
+              5, 6, 1,
+              5, 9, 6,
+              6, 9, 10
+            ],
+
+            material: {
+              color: this.texturePlate1
+            }
+          },
+          {
+            faces: [
+              3, 7, 2,
+              3, 8, 7
+            ],
+
+            material: {
+              color: this.texturePlate2
+            }
           }
-        }
-      ],
+        ],
 
-      spatialReference: measurement.location.spatialReference
-    });
+        spatialReference: this.clippingArea.spatialReference
+      });
 
-    const earthFaces = [
-      3, 9, 4,
-      9, 7, 4,
-      9, 10, 7,
-      7, 10, 8,
-      8, 10, 6,
-      5, 8, 6
-    ];
+      earthFaces = [
+        4, 5, 11,
+        5, 9, 11,
+        9, 12, 11,
+        10, 12, 9,
+        10, 8, 12,
+        7, 8, 10,
+        6, 7, 10,
+        2, 7, 6,
+        2, 6, 1
+      ];
+    }
+    else {
+      earthFaces = [
+        0, 3, 11,
+        11, 3, 12
+      ];
+    }
 
-    let facePtr = 11;
+    let facePtr = 13;
 
     // Add top connecting to the surface
     for (let i = 0; i < nElevSamples - 1; i++) {
@@ -318,10 +389,10 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
         }
       ],
 
-      spatialReference: measurement.location.spatialReference
+      spatialReference: this.clippingArea.spatialReference
     });
 
-    return [ band, earth ];
+    return { band, earth } as any;
   }
 
   private update() {
@@ -332,7 +403,7 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
 
     const currentGraphics = this.graphics.toArray();
 
-    const nSlices: number = 5;
+    const nSlices: number = 2;
     const clip = this.clippingArea;
 
     for (let i = 0; i < nSlices; i++) {
@@ -343,27 +414,38 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
       // through this x coordinate
       const measurement = this.findMeasurementAt(x, clip.ymin, clip.ymax);
 
-      if (!measurement) {
-        continue;
+      // Generate mesh out of slice to represent the tectonic movement
+      const sliceMeshes = this.createMeshSlice(measurement, x, 0);
+
+      if (sliceMeshes.band) {
+        const graphic = new Graphic({
+          geometry: sliceMeshes.band,
+          symbol: this.symbolBand
+        });
+
+        this.graphics.add(graphic);
       }
 
-      // Generate mesh out of slice to represent the tectonic movement
-      const gg = this.createMeshSlice(measurement);
+      if (sliceMeshes.earth) {
+        const graphic = new Graphic({
+          geometry: sliceMeshes.earth,
+          symbol: this.symbolEarth
+        });
 
-      const g2 = new Graphic({
-        geometry: gg[0],
-        symbol: this.symbol
-      });
-
-      this.graphics.add(g2);
-
-      const g3 = new Graphic({
-        geometry: gg[1],
-        symbol: this.symbol
-      });
-
-      this.graphics.add(g3);
+        this.graphics.add(graphic);
+      }
     }
+
+    // Add meshes to close the box
+    this.graphics.add(new Graphic({
+      geometry: this.createMeshSlice(null, this.clippingArea.ymin, 1).earth,
+      symbol: this.symbolEarth
+    }));
+
+    this.graphics.add(new Graphic({
+      geometry: this.createMeshSlice(null, this.clippingArea.ymax, 1).earth,
+      symbol: this.symbolEarth
+    }));
 
     this.graphics.removeMany(currentGraphics);
   }
@@ -400,7 +482,8 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
 }
 
 interface ConstructProperties {
-  symbol: esri.MeshSymbol3D;
+  symbolBand: esri.MeshSymbol3D;
+  symbolEarth: esri.MeshSymbol3D;
   clippingArea: Extent;
   elevationSampler: esri.ElevationSampler;
 }
@@ -411,9 +494,8 @@ interface Measurement {
 }
 
 interface Velocity {
-  dir: number;
-  y: number;
-  z: number;
+  angle: number;
+  length: number;
 }
 
 export default TectonicPlatesLayer;

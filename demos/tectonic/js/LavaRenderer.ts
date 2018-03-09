@@ -201,7 +201,7 @@ export class LavaRenderer extends declared(Accessor) {
         varying vec2 vUV;
 
         void main() {
-          vUV = aUV * uResolution - vec2(0, 100);
+          vUV = aUV * uResolution - vec2(0, -200);
           gl_Position = uProjectionMatrix * uViewMatrix * vec4(aVertexPosition.x, aVertexPosition.y, aVertexPosition.z + uTop, 1);
         }
       `,

@@ -3,7 +3,7 @@
 
 // esri
 import Map = require("esri/Map");
-import { Polyline, SpatialReference } from "esri/geometry";
+import { Polyline, Point, SpatialReference } from "esri/geometry";
 
 // esri.core
 import watchUtils = require("esri/core/watchUtils");
@@ -48,17 +48,19 @@ export async function run() {
   // Setup the basic view
   const view = new View({ tectonicPlateBoundaryLine });
 
-  // Camera updates
-  createScrollAlong(view, tectonicPlateBoundaryLine);
+  // Step 2: Overview map
+  //
+  // createOverview(view);
 
-  // Custom rendered data
-  create3DTitle(view);
+  // Step 3: Custom 2.5D dom
+  //
+  // create3DDOMElements(view);
 
-  // Overview map
-  createOverview(view);
+  // Step 6: Camera updates
+  //
+  // createScrollAlong(view, tectonicPlateBoundaryLine);
 
-
-  window.view = view.view;
+  window.view = view;
 }
 
 function createOverview(view: View) {
@@ -69,11 +71,38 @@ function createScrollAlong(view: View, path: Polyline) {
   return new ScrollAlong({ view: view.view, viewport: view.viewport, path });
 }
 
-function create3DTitle(view: View) {
-  const titleElement = document.getElementById("title");
-  return new DOMElement3D({ view: view.view, viewport: view.viewport, element: titleElement, elevation: 10000 });
+function create3DDOMElements(view: View) {
+  create3DDOMTitle(view);
+  create3DDOMDescription(view);
 }
 
+function create3DDOMDescription(view: View) {
+  const titleElement = document.getElementById("description");
+  const domElement = new DOMElement3D({ view: view.view, element: titleElement, heading: 90 });
+
+  watchUtils.init(view.viewport, "clippingArea", () => {
+    const clip = view.viewport.clippingArea;
+    const spatialReference = clip.spatialReference;
+
+    // Position the element in between the ymin segment of the clipping area
+    const location = new Point({ x: clip.xmax, y: (clip.ymin + clip.ymax) / 2, z: 6500, spatialReference });
+    domElement.location = location;
+  });
+}
+
+function create3DDOMTitle(view: View) {
+  const titleElement = document.getElementById("title");
+  const domElement = new DOMElement3D({ view: view.view, element: titleElement, heading: -180 });
+
+  watchUtils.init(view.viewport, "clippingArea", () => {
+    const clip = view.viewport.clippingArea;
+    const spatialReference = clip.spatialReference;
+
+    // Position the element in between the ymin segment of the clipping area
+    const location = new Point({ x: (clip.xmin + clip.xmax) / 2, y: clip.ymin, z: 8000, spatialReference });
+    domElement.location = location;
+  });
+}
 
 async function getTectonicPlateBoundaryLine() {
   const query = new QueryTask({
