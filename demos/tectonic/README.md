@@ -1,7 +1,7 @@
-# Tectonic plates
+# Tectonic plates visualization
 
 Demo visualizing tectonic plates with customized camera, clipping area, meshes and external renderers.
 
-![Screenshot](img/screenshot.png)
+![Tectonic plates app screenshot](dimg/screenshot.png)
 
-Live:
+Live: https://jkieboom.github.io/devsummit-palm-springs-2018/demos/tectonic
