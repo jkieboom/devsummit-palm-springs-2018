@@ -1,0 +1,63 @@
+<script>
+function snippet(containers, interlinks) {
+  require([
+    "esri/Map",
+    "esri/views/SceneView"
+  ], function(
+    Map,
+    SceneView
+  ) {
+
+    var view = new SceneView({
+      container: containers.viewDiv,
+
+      map: new Map({
+        basemap: "satellite",
+        ground: "world-elevation"
+      }),
+
+      environment: {
+        starsEnabled: false
+      },
+
+      center: [0, 0]
+    });
+
+
+    function rotateView(easing) {
+      var cam = view.camera.clone();
+      cam.position = {
+          longitude: cam.position.longitude + 90,
+          latitude: cam.position.latitude,
+          z: cam.position.z
+      };
+      return view.goTo({
+        target: cam
+      }, {
+        duration: 5000,
+        easing: easing
+      });
+    }
+
+    var idx = 0;
+    var easing = [
+      "linear",
+      "in-out-cubic",
+      "in-out-expo"
+    ];
+    interlinks.playButton = function() {
+      rotateView(easing[(idx++) % 3]);
+    }
+
+  });
+}
+
+
+settings = {
+  disableOverviewMap: true,
+  disableLog: true
+};
+
+</script>
+
+<script src="./support/snippet.js"></script>

@@ -1,0 +1,83 @@
+<script>
+function snippet(containers, interlinks) {
+  require([
+    "esri/Map",
+    "esri/views/SceneView",
+    "esri/Graphic",
+    "esri/geometry/Point",
+    "esri/symbols/PointSymbol3D",
+    "esri/symbols/ObjectSymbol3DLayer"
+  ], function(
+    Map,
+    SceneView,
+    Graphic,
+    Point,
+    PointSymbol3D,
+    ObjectSymbol3DLayer
+  ) {
+
+    var view = new SceneView({
+      container: containers.viewDiv,
+
+      map: new Map({
+        basemap: "satellite",
+        ground: "world-elevation"
+      }),
+
+      camera: {
+        position: {
+          x: 7.918,
+          y: 46.598,
+          z: 1466.92
+        },
+        heading: 5.98,
+        tilt: 82.47
+      }
+    });
+
+    view.when(function() {
+      var sym = {
+        type: "point-3d",
+        symbolLayers: [{
+          type: "object",
+          width: 40,
+          height: 80,
+          resource: { href: "./data/FagusSylvatica.json" }
+        }]
+      };
+
+      for (var i = 0; i < 20; i++) {
+        view.graphics.add(new Graphic({
+          geometry: new Point({
+            x: 881593.0984053069 + Math.random() * 400 - 200,
+            y: 5878206.130660184 + Math.random() * 400 - 200,
+
+            spatialReference: 102100
+          }),
+
+          symbol: sym
+        }));
+      }
+    });
+
+    view.watch("camera", function(camera) {
+      interlinks.log("scale:", Math.round(view.scale / 1000) * 1000, ", heading:", Math.round(camera.heading), ", tilt:", Math.round(camera.tilt));
+    });
+
+    interlinks.playButton = function() {
+      view.goTo({
+        target: view.graphics,
+        scale: 5000,
+        heading: 30,
+        tilt: 60
+      });
+    };
+
+    window.parent.view = view;
+
+  });
+}
+
+</script>
+
+<script src="./support/snippet.js"></script>
