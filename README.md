@@ -20,10 +20,6 @@ Learn how you can leverage the WebGL capabilities of your browser with the JavaS
 
 Live: https://jkieboom.github.io/devsummit-palm-springs-2018/presentations/advanced-3d-arcgis-js-api
 
-# Demos
-
-## Tectonic plates visualization
-
 <img alt="Tectonic plates app screenshot" src="demos/tectonic/img/screenshot.png" width="50%"/>
 
-Live: https://jkieboom.github.io/devsummit-palm-springs-2018/demos/tectonic
+Demo: https://jkieboom.github.io/devsummit-palm-springs-2018/demos/tectonic
