@@ -9,6 +9,8 @@ html, body, #viewDiv {
 #overviewDiv {
   width: 300px;
   height: 200px;
+  max-width: 15vw;
+  max-height: 10vw;
   position: absolute;
   top: 12px;
   right: 12px;
