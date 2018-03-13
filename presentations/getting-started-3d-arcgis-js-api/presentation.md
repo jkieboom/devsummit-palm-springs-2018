@@ -19,6 +19,9 @@ https://github.com/jkieboom/devsummit-palm-springs-2018
 
 # API concepts
 
+<br>
+Live version of this presentation is available on:<br><br>https://jkieboom.github.io/devsummit-palm-springs-2018/presentations/getting-started-3d-arcgis-js-api
+
 ---
 
 ## Working with the [`SceneView`](https://developers.arcgis.com/javascript/latest/api-reference/esri-views-SceneView.html)

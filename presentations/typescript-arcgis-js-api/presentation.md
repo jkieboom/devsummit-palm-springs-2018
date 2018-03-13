@@ -6,6 +6,11 @@ Nick Senger
 &
 Jesse van den Kieboom
 
+<br>
+<p><small>
+Live version of this presentation is available on:<br>https://jkieboom.github.io/devsummit-palm-springs-2018/presentations/typescript-arcgis-js-api
+</small></p>
+
 ---
 
 <!-- .slide: class="agenda" -->

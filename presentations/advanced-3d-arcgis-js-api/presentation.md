@@ -11,6 +11,11 @@
 <p>Jesse van den Kieboom, ESRI R&amp;D Center Z&uuml;rich</p>
 <p>Thomas Other, ESRI R&amp;D Center Z&uuml;rich</p>
 
+<br>
+<p><small>
+Live version of this presentation is available on:<br>https://jkieboom.github.io/devsummit-palm-springs-2018/presentations/advanced-3d-arcgis-js-api
+</small></p>
+
 ---
 
 <!-- .slide: data-background="images/bg-4.png" -->
