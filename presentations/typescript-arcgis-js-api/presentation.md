@@ -287,12 +287,39 @@ list.find(v => v > 1);
 - Can help making types flexible but keeping them strict
 
 ```ts
+interface Options {
+  shouldQuery: boolean;
+  returnGeometry: boolean;
+}
+
+const defaultOptions: Options = {
+  shouldQuery: false,
+  returnGeometry: false
+};
+
+function withOptions(options?: Partial<Options>) {
+  const withDefaults = { ...defaultOptions, ...options };
+}
+```
+
+---
+
+## keyof
+
+```ts
 type Partial<T> = {
   [P in keyof T]?: T[P];
 }
 
-export function set<T, P extends keyof T>(instance: T, propName: P, propValue: T[P]) {
-  instance[propName] = propValue;
+type PartialOptions = Partial<Options>;
+
+//
+// Equivalent to
+//
+
+interface PartialOptions {
+  shouldQuery?: boolean;
+  returnGeometry?: boolean;
 }
 ```
 
