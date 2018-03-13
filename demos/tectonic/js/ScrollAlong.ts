@@ -32,6 +32,8 @@ export class ScrollAlong extends declared(Accessor) {
 
   initialize() {
     this.view.on("mouse-wheel", ev => this.onMouseWheel(ev));
+    this.view.on("hold", ev => this.onHold(ev));
+
     this.viewport.watch("clippingArea", () => this.updateViewCamera());
 
     const path = this.path.paths[0];
@@ -75,6 +77,7 @@ export class ScrollAlong extends declared(Accessor) {
   private interpolatedPath: CatmullRom;
   private positionOnPath = 0.6513702167390425;
   private userHeadingDelta = 16.22429524083836;
+  private playIntervalId = 0;
 
   //--------------------------------------------------------------------------
   //
@@ -181,6 +184,20 @@ export class ScrollAlong extends declared(Accessor) {
       scale: 171502,
       heading
     }, { animate: false });
+  }
+
+  private onHold(ev: esri.SceneViewHoldEvent) {
+    if (this.playIntervalId) {
+      clearInterval(this.playIntervalId);
+      this.playIntervalId = 0;
+    }
+    else {
+      this.playIntervalId = setInterval(() => {
+        this.moveAlongPath(0.0001);
+      }, 10);
+    }
+
+    ev.stopPropagation();
   }
 }
 

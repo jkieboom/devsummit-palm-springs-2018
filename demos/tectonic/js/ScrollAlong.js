@@ -30,11 +30,13 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
             var _this = _super.call(this) || this;
             _this.positionOnPath = 0.6513702167390425;
             _this.userHeadingDelta = 16.22429524083836;
+            _this.playIntervalId = 0;
             return _this;
         }
         ScrollAlong.prototype.initialize = function () {
             var _this = this;
             this.view.on("mouse-wheel", function (ev) { return _this.onMouseWheel(ev); });
+            this.view.on("hold", function (ev) { return _this.onHold(ev); });
             this.viewport.watch("clippingArea", function () { return _this.updateViewCamera(); });
             var path = this.path.paths[0];
             this.interpolatedPath = new CatmullRom_1.CatmullRom({ points: path });
@@ -127,6 +129,19 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 scale: 171502,
                 heading: heading
             }, { animate: false });
+        };
+        ScrollAlong.prototype.onHold = function (ev) {
+            var _this = this;
+            if (this.playIntervalId) {
+                clearInterval(this.playIntervalId);
+                this.playIntervalId = 0;
+            }
+            else {
+                this.playIntervalId = setInterval(function () {
+                    _this.moveAlongPath(0.0001);
+                }, 10);
+            }
+            ev.stopPropagation();
         };
         __decorate([
             decorators_1.property({ constructOnly: true })
