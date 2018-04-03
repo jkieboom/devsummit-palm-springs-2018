@@ -307,10 +307,10 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 var pos1 = (i + 1) / nSegments;
                 point0.x = xmin + dx * pos0;
                 point0.y = ymin + dy * pos0;
-                point0.z = this.top ? 0 : sampler.elevationAt(point0) || 0;
+                point0.z = this.top ? 0 : sampler.queryElevation(point0).z || 0;
                 point1.x = xmin + dx * pos1;
                 point1.y = ymin + dy * pos1;
-                point1.z = this.top ? 0 : sampler.elevationAt(point1) || 0;
+                point1.z = this.top ? 0 : sampler.queryElevation(point1).z || 0;
                 var zRel0 = 1.0 - (point0.z - this.bottom) / maxZ;
                 var zRel1 = 1.0 - (point1.z - this.bottom) / maxZ;
                 buffer[offset++] = point0.x;

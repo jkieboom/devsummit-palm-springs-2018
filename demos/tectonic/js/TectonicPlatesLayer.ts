@@ -270,14 +270,14 @@ export class TectonicPlatesLayer extends declared(GraphicsLayer) {
         [pt.x, pt.y] = [pt.y, pt.x];
       }
 
-      pt.z = this.elevationSampler.elevationAt(pt);
+      const ptWithZ = this.elevationSampler.queryElevation(pt) as Point;
 
       if (axis === 1) {
-        [pt.x, pt.y] = [pt.y, pt.x];
+        [ptWithZ.x, ptWithZ.y] = [ptWithZ.y, ptWithZ.x];
       }
 
-      position.push(pt.x, pt.y, pt.z);
-      position.push(pt.x, pt.y, z + h);
+      position.push(ptWithZ.x, ptWithZ.y, ptWithZ.z);
+      position.push(ptWithZ.x, ptWithZ.y, z + h);
     }
 
     for (let i = 0; i < position.length; i += 3) {

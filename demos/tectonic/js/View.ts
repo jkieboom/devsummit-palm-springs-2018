@@ -27,7 +27,7 @@ import MeshSymbol3D = require("esri/symbols/MeshSymbol3D");
 
 // esri.symbols.edges
 import SolidEdges3D = require("esri/symbols/edges/SolidEdges3D");
-import SketchyEdges3D = require("esri/symbols/edges/SketchyEdges3D");
+import SketchEdges3D = require("esri/symbols/edges/SketchEdges3D");
 
 // esri.views
 import SceneView = require("esri/views/SceneView");
@@ -273,7 +273,7 @@ export class View extends declared(Accessor) {
     const symbolBand = new MeshSymbol3D({
       symbolLayers: [
         new FillSymbol3DLayer({
-          edges: new SketchyEdges3D({ size: "1px", extensionLength: "5px" })
+          edges: new SketchEdges3D({ size: "1px", extensionLength: "5px" })
         })
       ]
     });

@@ -136,9 +136,9 @@ export class LavaRenderer extends declared(Accessor) {
     // Setup program and uniforms
     gl.useProgram(program);
 
-    const viewMatrix = mat4.translate(this.viewMatrix, camera.viewMatrix, this.origin);
+    const viewMatrix = mat4.translate(this.viewMatrix, camera.viewMatrix as any, this.origin);
     gl.uniformMatrix4fv(uniformLocations.uViewMatrix, false, viewMatrix);
-    gl.uniformMatrix4fv(uniformLocations.uProjectionMatrix, false, camera.projectionMatrix);
+    gl.uniformMatrix4fv(uniformLocations.uProjectionMatrix, false, camera.projectionMatrix as any);
     gl.uniform1f(uniformLocations.uTime, this.time);
     gl.uniform1f(uniformLocations.uTop, this.top);
     gl.uniform2f(uniformLocations.uResolution, 800, 800);
@@ -555,11 +555,11 @@ export class LavaRenderer extends declared(Accessor) {
 
       point0.x = xmin + dx * pos0;
       point0.y = ymin + dy * pos0;
-      point0.z = this.top ? 0 : sampler.elevationAt(point0) || 0;
+      point0.z = this.top ? 0 : (sampler.queryElevation(point0) as Point).z || 0;
 
       point1.x = xmin + dx * pos1;
       point1.y = ymin + dy * pos1;
-      point1.z = this.top ? 0 : sampler.elevationAt(point1) || 0;
+      point1.z = this.top ? 0 : (sampler.queryElevation(point1) as Point).z || 0;
 
       const zRel0 = 1.0 - (point0.z - this.bottom) / maxZ;
       const zRel1 = 1.0 - (point1.z - this.bottom) / maxZ;

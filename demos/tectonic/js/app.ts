@@ -22,7 +22,7 @@ import MeshSymbol3D = require("esri/symbols/MeshSymbol3D");
 
 // esri.symbols.edges
 import SolidEdges3D = require("esri/symbols/edges/SolidEdges3D");
-import SketchyEdges3D = require("esri/symbols/edges/SketchyEdges3D");
+import SketchEdges3D = require("esri/symbols/edges/SketchEdges3D");
 
 // esri.tasks
 import QueryTask = require("esri/tasks/QueryTask");

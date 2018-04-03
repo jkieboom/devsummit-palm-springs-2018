@@ -51,7 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/Map", "esri/core/watchUtils", "esri/core/Accessor", "esri/core/accessorSupport/decorators", "esri/layers/TileLayer", "esri/layers/FeatureLayer", "esri/layers/ElevationLayer", "esri/renderers/SimpleRenderer", "esri/symbols/FillSymbol3DLayer", "esri/symbols/MeshSymbol3D", "esri/symbols/edges/SolidEdges3D", "esri/symbols/edges/SketchyEdges3D", "esri/views/SceneView", "./BlendLayer", "./Viewport", "./LavaRenderer", "./TectonicPlatesLayer", "./PlateBoundaryLayer", "./ExaggerationElevationLayer"], function (require, exports, __extends, __decorate, Map, watchUtils, Accessor, decorators_1, TileLayer, FeatureLayer, ElevationLayer, SimpleRenderer, FillSymbol3DLayer, MeshSymbol3D, SolidEdges3D, SketchyEdges3D, SceneView, BlendLayer_1, Viewport_1, LavaRenderer_1, TectonicPlatesLayer_1, PlateBoundaryLayer_1, ExaggerationElevationLayer_1) {
+define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/core/tsSupport/decorateHelper", "esri/Map", "esri/core/watchUtils", "esri/core/Accessor", "esri/core/accessorSupport/decorators", "esri/layers/TileLayer", "esri/layers/FeatureLayer", "esri/layers/ElevationLayer", "esri/renderers/SimpleRenderer", "esri/symbols/FillSymbol3DLayer", "esri/symbols/MeshSymbol3D", "esri/symbols/edges/SolidEdges3D", "esri/symbols/edges/SketchEdges3D", "esri/views/SceneView", "./BlendLayer", "./Viewport", "./LavaRenderer", "./TectonicPlatesLayer", "./PlateBoundaryLayer", "./ExaggerationElevationLayer"], function (require, exports, __extends, __decorate, Map, watchUtils, Accessor, decorators_1, TileLayer, FeatureLayer, ElevationLayer, SimpleRenderer, FillSymbol3DLayer, MeshSymbol3D, SolidEdges3D, SketchEdges3D, SceneView, BlendLayer_1, Viewport_1, LavaRenderer_1, TectonicPlatesLayer_1, PlateBoundaryLayer_1, ExaggerationElevationLayer_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var View = /** @class */ (function (_super) {
@@ -241,7 +241,7 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                             symbolBand = new MeshSymbol3D({
                                 symbolLayers: [
                                     new FillSymbol3DLayer({
-                                        edges: new SketchyEdges3D({ size: "1px", extensionLength: "5px" })
+                                        edges: new SketchEdges3D({ size: "1px", extensionLength: "5px" })
                                     })
                                 ]
                             });

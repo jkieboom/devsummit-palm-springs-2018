@@ -256,12 +256,12 @@ define(["require", "exports", "esri/core/tsSupport/declareExtendsHelper", "esri/
                 if (axis === 1) {
                     _a = [pt.y, pt.x], pt.x = _a[0], pt.y = _a[1];
                 }
-                pt.z = this.elevationSampler.elevationAt(pt);
+                var ptWithZ = this.elevationSampler.queryElevation(pt);
                 if (axis === 1) {
-                    _b = [pt.y, pt.x], pt.x = _b[0], pt.y = _b[1];
+                    _b = [ptWithZ.y, ptWithZ.x], ptWithZ.x = _b[0], ptWithZ.y = _b[1];
                 }
-                position.push(pt.x, pt.y, pt.z);
-                position.push(pt.x, pt.y, z + h);
+                position.push(ptWithZ.x, ptWithZ.y, ptWithZ.z);
+                position.push(ptWithZ.x, ptWithZ.y, z + h);
             }
             for (var i = 0; i < position.length; i += 3) {
                 position[i + 1] = Math.min(Math.max(ymin, position[i + 1]), ymax);
